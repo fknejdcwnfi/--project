@@ -55,6 +55,7 @@ public class ChessBoardPanel extends JPanel {
         if (selectedPiece == null) {
             selectedPiece = model.getPieceAt(row, col);
         } else {
+            if(model.getPieceAt(row, col) != null) return; //由其子则不动
             model.movePiece(selectedPiece, row, col);
             selectedPiece = null;
         }
@@ -102,6 +103,12 @@ public class ChessBoardPanel extends JPanel {
                 g.drawLine(x, MARGIN + 5 * CELL_SIZE, x, MARGIN + (ChessBoardModel.getRows() - 1) * CELL_SIZE);
             }
         }
+
+        //画两个x线用于将和帅
+        g.drawLine(MARGIN  + 3 * CELL_SIZE, MARGIN, MARGIN + 5 * CELL_SIZE, MARGIN + 2 * CELL_SIZE);
+        g.drawLine(MARGIN  + 5 * CELL_SIZE, MARGIN, MARGIN + 3 * CELL_SIZE, MARGIN + 2 * CELL_SIZE);
+        g.drawLine(MARGIN  + 3 * CELL_SIZE, MARGIN + 9 * CELL_SIZE, MARGIN + 5 * CELL_SIZE, MARGIN + 7 * CELL_SIZE);
+        g.drawLine(MARGIN  + 3 * CELL_SIZE, MARGIN + 7 * CELL_SIZE, MARGIN + 5 * CELL_SIZE, MARGIN + 9 * CELL_SIZE);
 
         // 绘制“楚河”和“汉界”这两个文字
         g.setColor(Color.BLACK);
