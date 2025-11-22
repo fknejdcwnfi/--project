@@ -15,82 +15,43 @@ public class CarPiece extends AbstractPiece {
 
         int rowDiff = targetRow - currentRow;
         int colDiff = Math.abs(targetCol - currentCol);
-        int inColDiff = targetCol - currentCol;
 
         //移动的方法
         if ( (Math.abs(rowDiff) !=0 &&  Math.abs(colDiff) ==0) || (Math.abs(rowDiff) ==0 &&  Math.abs(colDiff) !=0)) {
-            if (rowDiff >0 &&  Math.abs(colDiff) ==0) {
-                boolean isNoPiece = true;
+            AbstractPiece target = model.getPieceAt(targetRow, targetCol);
+            int between = countPiecesBetween(currentRow, currentCol, targetRow, targetCol, model);
+            if (between < 0) return false;
 
-                   for (int i = 1; i < rowDiff; i++) {
-                       if (model.getPieceAt(currentRow + i, currentCol) == null) {
-                           continue;
-                       } else {
-                           isNoPiece = false;
-                           break;
-                       }
-                   }
-
-               if (isNoPiece) {
-                   return true;
-               }  else {
-                   return false;
-               }
+            if (target == null) {
+                // 普通移动：中间不能有子
+                return between == 0;
+            } else {
+                return between == 0;
             }
-
-            if (rowDiff <0 && Math.abs(colDiff) ==0) {
-            boolean isNoPiece = true;
-            for (int i = -1; i > rowDiff; i--) {
-                if (model.getPieceAt(currentRow + i, currentCol) == null) {
-                    continue;
-                }  else {
-                    isNoPiece = false;
-                    break;
-                }
-            }
-            if (isNoPiece) {
-                return true;
-            }   else {
-                return false;
-            }
-            }
-
-            if (rowDiff == 0 && inColDiff >0) {
-                boolean isNoPiece = true;
-                for (int i = 1; i < inColDiff; i++) {
-                    if (model.getPieceAt(currentRow, currentCol + i) == null) {
-                        continue;
-                    }   else {
-                        isNoPiece = false;
-                        break;
-                    }
-                }
-                if (isNoPiece) {
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-
-            if (rowDiff == 0 && inColDiff < 0) {
-                boolean isNoPiece = true;
-                for (int i = -1; i > inColDiff; i--) {
-                    if (model.getPieceAt(currentRow, currentCol + i) == null) {
-                        continue;
-                    }    else {
-                        isNoPiece = false;
-                        break;
-                    }
-                }
-                if (isNoPiece) {
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-        } else {
+    } else {
             return false;
         }
-        return true;
+
+}
+
+    private int countPiecesBetween(int r1, int c1, int r2, int c2, ChessBoardModel model) {
+        int count = 0;
+        if (r1 == r2) {
+            int start = Math.min(c1, c2) + 1;
+            int end = Math.max(c1, c2) - 1;
+            for (int c = start; c <= end; c++) {
+                if (model.getPieceAt(r1, c) != null) count++;
+            }
+        } else if (c1 == c2) {
+            int start = Math.min(r1, r2) + 1;
+            int end = Math.max(r1, r2) - 1;
+            for (int r = start; r <= end; r++) {
+                if (model.getPieceAt(r, c1) != null) count++;
+            }
+        } else {
+            // 不是直线，不是炮的移动
+            return -1;
+        }
+        return count;
     }
 }

@@ -16,7 +16,7 @@ public class PaoPiece extends AbstractPiece{
         int rowDiff = targetRow - currentRow;
         int colDiff = Math.abs(targetCol - currentCol);
 
-        //炮移动的方法，我这里没有涉及吃子的写法，单纯是写移动的方法。但是现在我尝试结合起来，这样才更简单完成这个代码！
+        //炮移动的方法
         if ( (Math.abs(rowDiff) !=0 &&  Math.abs(colDiff) ==0) || (Math.abs(rowDiff) ==0 &&  Math.abs(colDiff) !=0)) {
             AbstractPiece target = model.getPieceAt(targetRow, targetCol);
             int between = countPiecesBetween(currentRow, currentCol, targetRow, targetCol, model);

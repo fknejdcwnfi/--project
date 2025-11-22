@@ -52,19 +52,21 @@ public class ChessBoardPanel extends JPanel {
         int col = Math.round((float)(x - MARGIN) / CELL_SIZE);
         int row = Math.round((float)(y - MARGIN) / CELL_SIZE);
 
-        //详细看看
+        //吃子移动的代码如下
         if (!model.isValidPosition(row, col)) {//model 是‌棋盘模型对象‌
             return;
         }
 
         if (selectedPiece == null) {//selectedPiece是指我当前选中的棋子
             selectedPiece = model.getPieceAt(row, col);
-        } else {//单独写炮的吃子方法
+        } else {//此时有选中的状态
             if (model.getPieceAt(row, col) != null) {
                 AbstractPiece target = model.getPieceAt(row, col);
+                    // 确保是敌方才允许吃
                 if (target != null) {
                     // 确保是敌方才允许吃
                     if (target.isRed() == selectedPiece.isRed()) {
+                        selectedPiece = null;
                         return;
                     }
                     // 在目标仍存在时判断吃子是否合法（Pao 的 canMoveTo 会检查“中间恰好有1个”的规则）
@@ -75,15 +77,17 @@ public class ChessBoardPanel extends JPanel {
                         model.movePieceForce(selectedPiece, row, col);//？
                         selectedPiece = null;
                     } else {
+                        selectedPiece = null;
                         return;
                     }
-                 }
+                }
                 } else {
                     // 目标为空，走普通移动，使用正常的 movePiece（含校验）
                     if (selectedPiece.canMoveTo(row, col, model)) {
                         model.movePiece(selectedPiece, row, col);
                         selectedPiece = null;
                     } else {
+                        selectedPiece = null;
                         return;
                     }
                 }
