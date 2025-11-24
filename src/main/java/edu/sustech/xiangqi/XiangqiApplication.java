@@ -8,10 +8,7 @@ import javax.swing.*;
 public class XiangqiApplication {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            GameFrame gameFrame = new GameFrame();//同理游戏框架
             LoginFrame loginFrame = new LoginFrame();//输入框另起一个类，现在是在调用父类
-
-
         });
     }
 }

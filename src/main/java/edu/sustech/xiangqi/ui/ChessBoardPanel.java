@@ -1,15 +1,22 @@
 package edu.sustech.xiangqi.ui;
 
+import edu.sustech.xiangqi.CurrentCamp;
+import edu.sustech.xiangqi.GameFrame;
 import edu.sustech.xiangqi.model.ChessBoardModel;
 import edu.sustech.xiangqi.model.AbstractPiece;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
+import javax.swing.Timer;
+
+
 
 public class ChessBoardPanel extends JPanel {
     private final ChessBoardModel model;
+
+    // 新增：定义一个全局的提示标签
+    private JLabel statusLabel;
 
     /**
      * 单个棋盘格子的尺寸（px）
@@ -28,13 +35,25 @@ public class ChessBoardPanel extends JPanel {
 
     private AbstractPiece selectedPiece = null;
 
+    private boolean interactionEnabled = false;
+
+    private CurrentCamp currentCamp = new CurrentCamp();
+
     public ChessBoardPanel(ChessBoardModel model) {
         this.model = model;
+
+        // 1. 设置布局为 null，这样我们可以用 setBounds 随意放置 Label
+        this.setLayout(null);
+
         setPreferredSize(new Dimension(
                 CELL_SIZE * (ChessBoardModel.getCols() - 1) + MARGIN * 2,
                 CELL_SIZE * (ChessBoardModel.getRows() - 1) + MARGIN * 2
         ));
         setBackground(new Color(220, 179, 92));
+
+
+        // 2. 初始化提示标签
+        initStatusLabel();
 
         addMouseListener(new MouseAdapter() {
             @Override
@@ -44,13 +63,70 @@ public class ChessBoardPanel extends JPanel {
         });
     }
 
+    //  新增：初始化标签的方法
+    private void initStatusLabel() {
+        statusLabel = new JLabel("请点击右侧“点击开始”", SwingConstants.CENTER); // 文字居中
+        statusLabel.setFont(new Font("楷体", Font.BOLD, 24)); // 字体大一点
+        statusLabel.setForeground(Color.RED); // 醒目的颜色
+
+        // 计算居中位置 (假设棋盘大概宽500-600)
+        // setBounds(x, y, width, height)
+        statusLabel.setBounds(100, 300, 400, 60);
+
+        statusLabel.setVisible(true); // 默认显示提示
+        this.add(statusLabel); //  把标签加到“自己”（this）上面
+    }
+
+    //  修改：updateTurnLabel 方法，用于在切换回合时更新提示文字
+    private void updateTurnLabel() {
+        if (!interactionEnabled) return; // 如果游戏还没开始，不更新回合文字
+
+        if (currentCamp.isRedTurn()) {
+            statusLabel.setText("当前回合：红方");
+            statusLabel.setForeground(Color.RED);
+        } else {
+            statusLabel.setText("当前回合：黑方");
+            statusLabel.setForeground(Color.BLACK);
+        }
+        statusLabel.setVisible(true); // 确保文字显示
+    }
+
     public ChessBoardModel model() {
         return model;
     }
 
+    /// /////////////////////////////////////////////////////////////////////////////////////////
+    public void setGameInteractionEnabled(boolean enabled) {
+        this.interactionEnabled = enabled; // 使用 this
+
+        if (interactionEnabled) {
+            // 游戏开始
+            currentCamp.reset(); // 重置为红方先走
+            updateTurnLabel();   // 显示 "当前回合：红方"
+            // 注意：这里不需要 Timer 自动隐藏了，因为回合提示需要一直显示让玩家知道该谁走
+
+        } else {
+            // 禁用时：一直显示提示
+            statusLabel.setText("请点击开始");
+            statusLabel.setForeground(Color.RED);
+            statusLabel.setVisible(true);
+        }
+        // 重新绘制，确保 Label 刷新
+        repaint();
+    }
+
+    /// ////////////////////////////////////////////////
+    ///
     private void handleMouseClick(int x, int y) {
-        int col = Math.round((float)(x - MARGIN) / CELL_SIZE);
-        int row = Math.round((float)(y - MARGIN) / CELL_SIZE);
+
+        // *** 关键检查 ***/////////////////////////////////////////////////////////////////
+        if (!interactionEnabled) {
+            return;
+        }
+        /// ///////////////////////////////////////////////////////////////////////////////
+
+        int col = Math.round((float) (x - MARGIN) / CELL_SIZE);
+        int row = Math.round((float) (y - MARGIN) / CELL_SIZE);
 
         //吃子移动的代码如下
         if (!model.isValidPosition(row, col)) {//model 是‌棋盘模型对象‌
@@ -58,39 +134,61 @@ public class ChessBoardPanel extends JPanel {
         }
 
         if (selectedPiece == null) {//selectedPiece是指我当前选中的棋子
-            selectedPiece = model.getPieceAt(row, col);
-        } else {//此时有选中的状态
-            if (model.getPieceAt(row, col) != null) {
-                AbstractPiece target = model.getPieceAt(row, col);
-                    // 确保是敌方才允许吃
-                if (target != null) {
-                    // 确保是敌方才允许吃
-                    if (target.isRed() == selectedPiece.isRed()) {
-                        selectedPiece = null;
-                        return;
-                    }
-                    // 在目标仍存在时判断吃子是否合法（Pao 的 canMoveTo 会检查“中间恰好有1个”的规则）
-                    if (selectedPiece.canMoveTo(row, col, model)) {
-                        // 保存 target 引用，先移除目标
-                        model.remove(target);
-                        // 直接强制移动（跳过再次校验，避免因目标已被移除影响逻辑）
-                        model.movePieceForce(selectedPiece, row, col);//？
-                        selectedPiece = null;
-                    } else {
-                        selectedPiece = null;
-                        return;
-                    }
-                }
+            AbstractPiece piece = model.getPieceAt(row, col);
+            //  校验：只有当前回合的阵营才能选中棋子
+            if (piece != null) {
+                if (piece.isRed() == currentCamp.isRedTurn()) {
+                    selectedPiece = piece; // 选中成功
                 } else {
-                    // 目标为空，走普通移动，使用正常的 movePiece（含校验）
-                    if (selectedPiece.canMoveTo(row, col, model)) {
-                        model.movePiece(selectedPiece, row, col);
-                        selectedPiece = null;
-                    } else {
-                        selectedPiece = null;
-                        return;
-                    }
+                    statusLabel.setText("现在不是你的回合！");
+                    statusLabel.setForeground(Color.BLUE);
+                    statusLabel.setVisible(true);
+                    // 2. 设置一个计时器，1秒后隐藏文字，防止挡住棋子
+                    Timer timer = new Timer(1000, e -> statusLabel.setVisible(false));
+                    timer.setRepeats(false);
+                    timer.start();
                 }
+            }
+
+        } else {//此时有选中的状态，当前已选中棋子 -> 尝试移动或吃子
+            AbstractPiece target = model.getPieceAt(row, col);
+            boolean moveSuccess = false; // 标记是否移动成功
+            // A. 点击了自己的棋子 -> 重新选中（换一个子）
+            if (target != null && target.isRed() == selectedPiece.isRed()) {
+                // 只有也是己方棋子才换选中，否则视为移动目标
+                selectedPiece = target;
+                repaint();
+                return; // 仅仅是换了选中的子，不切换回合
+            }
+            // B. 点击了空地或敌人 -> 尝试移动
+            if (target != null) {
+                // 在目标仍存在时判断吃子是否合法（Pao 的 canMoveTo 会检查“中间恰好有1个”的规则）
+                if (selectedPiece.canMoveTo(row, col, model)) {
+                    // 保存 target 引用，先移除目标
+                    model.remove(target);
+                    // 直接强制移动（跳过再次校验，避免因目标已被移除影响逻辑）
+                    model.movePieceForce(selectedPiece, row, col);//？
+                    selectedPiece = null;
+                    moveSuccess = true;
+                } else {
+                    selectedPiece = null;
+                    return;
+                }
+            } else {
+                // 目标为空，走普通移动，使用正常的 movePiece（含校验）
+                if (selectedPiece.canMoveTo(row, col, model)) {
+                    model.movePiece(selectedPiece, row, col);
+                    selectedPiece = null;
+                    moveSuccess = true;
+                } else {
+                    selectedPiece = null;
+                    return;
+                }
+            }
+            if (moveSuccess) {
+                currentCamp.nextTurn(); // 切换红黑
+                updateTurnLabel();      // 更新界面文字
+            }
         }
 
         // 处理完点击事件后，需要重新绘制ui界面才能让界面上的棋子“移动”起来
