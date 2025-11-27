@@ -1,5 +1,7 @@
 package edu.sustech.xiangqi;
 
+
+
 import edu.sustech.xiangqi.ui.LoginPanel;
 
 import javax.swing.*;
@@ -37,10 +39,8 @@ public class LoginFrame extends JFrame{
         try {
             Scanner nickname = new Scanner(new File(".\\src\\main\\java\\edu\\sustech\\xiangqi\\Nickname"));
 
+            //这是登录框架的开始按键的相关响应代码部分
             loginPanel.getLoginButton().addActionListener(e -> {//button指开始的按键
-                //String importUserName = loginPanel.getUsername().getText();
-                //String importUserPassword = loginPanel.getPassword().getText();
-
                 if (enteruser(loginPanel.getUsername())>=0)//指用户存在
                 {
                     if(enterpassword(loginPanel.getPassword(),enteruser(loginPanel.getUsername()))){/// /////////////////////////////////////密码正确
@@ -66,24 +66,26 @@ public class LoginFrame extends JFrame{
             System.out.println("操作错误2");
         }
 
-        loginPanel.getSignInButton().addActionListener(e -> {//从登录到注册的启动按键
+        //从登录到注册的启动按键
+        loginPanel.getSignInButton().addActionListener(e -> {
             signinFrame.setVisible(true);
             this.setVisible(false);
         });
 
-        signinFrame.getReturnButton().addActionListener(e -> {//从注册界面回到登录界面
+        //从注册界面回到登录界面
+        signinFrame.getReturnButton().addActionListener(e -> {
             signinFrame.setVisible(false);
             this.setVisible(true);
         });
 
-        gameFrame.getReturntologinbutton().addActionListener(e -> {//从游戏框架回来到登录界面
+        //从游戏框架回来到登录界面
+        gameFrame.getReturntologinbutton().addActionListener(e -> {
             gameFrame.setVisible(false); // 隐藏游戏
             this.setVisible(true); // 显示登录
         });
 
-        signinFrame.getConfirmPasswordButton().addActionListener(e->{//点击确认注册那个按键的操作判定
-//            String putnickname=nickname.getText();
-//            String putsetpassword=setpassword.getText();
+        //点击确认注册那个按键的操作判定（注册用户的相关判定）
+        signinFrame.getConfirmPasswordButton().addActionListener(e->{
             if(rightname(signinFrame.getYourNameTextField()) && passworkcheck(signinFrame.getYourPasswordTextField())){//正确的密码格式和账号格式 //后面是写入对应文本的方法
                     try{
                         String roadN=".\\src\\main\\java\\edu\\sustech\\xiangqi\\Nickname";
@@ -140,19 +142,17 @@ public class LoginFrame extends JFrame{
 
         });
 
-        ///////////////////////////////////现在来搞这个鼠标点击事件
-        gameFrame.getChangeinformation().addActionListener(e->{//这个还没有做
+        ///////////////////////////////////
+        //游戏框架里面的修改信息按键响应代码
+        gameFrame.getChangeinformation().addActionListener(e->{
             changePasswordFrame.setVisible(true);
             gameFrame.setVisible(false);
         });
 
+        //改变密码的相关代码（可能是这里出现问题了）
         changePasswordFrame.getChangePasswordButton().addActionListener(e->{
-//            String yourUserName = theUserNameText.getText();
-//            String yourOldPassword = oldPassword.getText();
-//            String yourNewPassword = newPassword.getText();
-
             // 1. 获取用户索引
-            int userIndex = InterChecking.enteruser(changePasswordFrame.getTheUserName());
+            int userIndex = InterChecking.enteruser(changePasswordFrame.theUserNameText());
 
             // 2. 验证：用户存在 && 旧密码正确 && 新密码格式正确
             if (userIndex >= 0
@@ -183,7 +183,7 @@ public class LoginFrame extends JFrame{
             gameFrame.setVisible(true);
         });
 
-        //////////////////////////////这里是存档和退出的功能
+        //////////////////////////////这里是存档和退出的功能（但是现在还没有做具体的功能）
         gameFrame.getSavaAndOutButton().addActionListener(e->{
             gameFrame.setVisible(false);
             gameFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

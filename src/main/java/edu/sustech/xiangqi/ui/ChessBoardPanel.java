@@ -2,6 +2,7 @@ package edu.sustech.xiangqi.ui;
 
 import edu.sustech.xiangqi.CurrentCamp;
 import edu.sustech.xiangqi.GameFrame;
+import edu.sustech.xiangqi.MoveEveryStep;
 import edu.sustech.xiangqi.model.ChessBoardModel;
 import edu.sustech.xiangqi.model.AbstractPiece;
 
@@ -55,10 +56,10 @@ public class ChessBoardPanel extends JPanel {
         // 2. 初始化提示标签
         initStatusLabel();
 
-        addMouseListener(new MouseAdapter() {
+        addMouseListener(new MouseAdapter() {//鼠标点击获取坐标的核心逻辑
             @Override
-            public void mouseClicked(MouseEvent e) {
-                handleMouseClick(e.getX(), e.getY());
+            public void mouseClicked(MouseEvent e) {//获取MouseEvent对象的坐标
+                handleMouseClick(e.getX(), e.getY());//执行相应的方法
             }
         });
     }
@@ -164,6 +165,12 @@ public class ChessBoardPanel extends JPanel {
             if (target != null) {
                 // 在目标仍存在时判断吃子是否合法（Pao 的 canMoveTo 会检查“中间恰好有1个”的规则）
                 if (selectedPiece.canMoveTo(row, col, model)) {
+
+                    //记录吃子的情况先记录在移除
+                    MoveEveryStep move = new MoveEveryStep(selectedPiece, row, col, target);
+                    model.recordMove(move);
+                    //这是记录棋子的吃子情况
+
                     // 保存 target 引用，先移除目标
                     model.remove(target);
                     // 直接强制移动（跳过再次校验，避免因目标已被移除影响逻辑）
@@ -172,16 +179,24 @@ public class ChessBoardPanel extends JPanel {
                     moveSuccess = true;
                 } else {
                     selectedPiece = null;
+                    repaint();//失败后也要重新绘制来清除选中框
                     return;
                 }
             } else {
                 // 目标为空，走普通移动，使用正常的 movePiece（含校验）
                 if (selectedPiece.canMoveTo(row, col, model)) {
+
+                    //记录普哦她那个移动的情况
+                    MoveEveryStep move = new MoveEveryStep(selectedPiece, row, col, null);
+                    model.recordMove(move);
+                    //这是记录普通的移动过情况
+
                     model.movePiece(selectedPiece, row, col);
                     selectedPiece = null;
                     moveSuccess = true;
                 } else {
                     selectedPiece = null;
+                    repaint();//同上
                     return;
                 }
             }

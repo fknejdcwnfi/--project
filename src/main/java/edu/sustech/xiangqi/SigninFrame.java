@@ -18,7 +18,7 @@ public class SigninFrame extends JFrame {
 
     public SigninFrame() {
         super("登录");
-        this.setLayout(null);
+        this.setLocationRelativeTo(null);
         this.setSize(500, 500);
         this.setVisible(false);
         returnButton = new JButton("返回");

@@ -19,8 +19,9 @@ public class ChangePasswordFrame extends JFrame {
 
     public ChangePasswordFrame() {
         super("修改密码");
-        this.setLayout(null); // 继续使用 null 布局以便于移植
-        this.setPreferredSize(new Dimension(500, 500)); // 设定首选尺寸
+        this.setLocationRelativeTo(null);
+        this.setLayout(null);
+        this.setSize(500, 500);
         this.setVisible(false);
         //输入框是什么？
         //
@@ -29,7 +30,7 @@ public class ChangePasswordFrame extends JFrame {
         changePasswordLabel.setSize(100, 50);
         changePasswordLabel.setLocation(210, 20);
         this.add(changePasswordLabel);
-        changePasswordLabel.setVisible(false);
+        changePasswordLabel.setVisible(true);
         //
 
         //用户名的设置框架
@@ -98,11 +99,11 @@ public class ChangePasswordFrame extends JFrame {
         this.add(errorOne);
         errorOne.setVisible(false);
 
-        errorTwo = new JLabel("验证失败：用户名不存在、旧密码错误或新密码过短");
+        errorTwo = new JLabel("验证失败，请重试！");
         errorTwo.setFont(new Font("Dialog", Font.PLAIN, 12)); // 12磅
         errorTwo.setForeground(java.awt.Color.BLUE); // 成功提示用蓝色
         errorTwo.setSize(200, 50);
-        errorTwo.setLocation(170, 280);
+        errorTwo.setLocation(200, 280);
         this.add(errorTwo);
         errorTwo.setVisible(false);
     }
@@ -123,8 +124,8 @@ public class ChangePasswordFrame extends JFrame {
         return newPasswordField.getText();
     }
 
-    public String getTheUserName() {
-        return theUserName.getText();
+    public String theUserNameText() {
+        return theUserNameText.getText();
     }
     public JLabel getErrorOne() {
         return errorOne;

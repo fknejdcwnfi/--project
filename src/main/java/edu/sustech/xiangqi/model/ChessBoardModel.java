@@ -1,5 +1,7 @@
 package edu.sustech.xiangqi.model;
 
+import edu.sustech.xiangqi.MoveEveryStep;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,9 +10,12 @@ public class ChessBoardModel {
     private final List<AbstractPiece> pieces;
     private static final int ROWS = 10;
     private static final int COLS = 9;
+    private final List<MoveEveryStep> moveHistory;
+
 
     public ChessBoardModel() {
         pieces = new ArrayList<>();
+        moveHistory = new ArrayList<>();
         initializePieces();
     }
 
@@ -99,5 +104,14 @@ public class ChessBoardModel {
 
     public void remove(AbstractPiece getTargetPiece){
         pieces.remove(getTargetPiece);
+    }
+
+    public void recordMove(MoveEveryStep move){
+        moveHistory.add(move);
+        System.out.print("Recorded move " + move.getMoveDescription());
+    }
+
+    public List<MoveEveryStep> getMoveHistory() {
+        return moveHistory;
     }
 }

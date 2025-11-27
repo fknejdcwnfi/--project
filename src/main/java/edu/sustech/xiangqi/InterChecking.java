@@ -86,6 +86,7 @@ public class InterChecking {
         }
     }
 
+    //修改密码的方法
     public static boolean updatePasswordInFile(int targetIndex, String newPassword) {
         String roadP = ".\\src\\main\\java\\edu\\sustech\\xiangqi\\Password";
         File file = new File(roadP);
