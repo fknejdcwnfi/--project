@@ -8,24 +8,54 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File; // Import this
 
 public class GameFrame  extends JFrame {
 
+    // --- NEW FIELDS ---
+    private PlayGameSession activeSession;
+    private ChessBoardPanel boardPanel;
+    // ------------------
+
     private JButton Startbutton;
     private JButton changeinformation;
-    private JButton savaAndOutButton;
+    private JButton saveAndOutButton;
     private JButton returntologinbutton;
 
-    public GameFrame() {
+    public GameFrame(String playerName) {
 
         super("中国象棋");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLocationRelativeTo(null);
         this.setLayout(new BorderLayout());
 
-        // 1. 棋盘面板 (CENTER) - 保持不变
-        ChessBoardModel model = new ChessBoardModel();
-        ChessBoardPanel boardPanel = new ChessBoardPanel(model);
+        /// //////////////////////////////////////////////////////////////////////
+        //New Logic : load or craete Session
+        //1. try to load the existing save game
+        activeSession = GamePersistence.loadGame(playerName);
+
+        //if load failed (returns null), create a new session
+        if (activeSession == null) {
+            activeSession = new PlayGameSession(playerName);
+            //if new game ,enable the start button
+            Startbutton = new JButton("点击开始");
+        } else {
+            //if loaded game ,automatically enable interaction
+            Startbutton = new JButton("游戏中");
+            Startbutton.setEnabled(false);
+        }
+/// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // 1. creat棋盘面板 (CENTER)
+        ChessBoardModel model = activeSession.getChessBoardModel();
+        CurrentCamp currentCamp = activeSession.getCurrentCamp();// You'll need to update ChessBoardPanel
+        this.boardPanel = new ChessBoardPanel(model, currentCamp);
+
+        //chessboardpanel needs to be updated to accept CurrentCamp
+
+        this.boardPanel.setGameInteractionEnabled(!Startbutton.isEnabled());// Match state of button
+
         this.add(boardPanel, BorderLayout.CENTER);
         // 2. 按钮的具体设置
         // 创建一个统一的尺寸，例如：宽 120，高 40 (根据你的喜好调整)
@@ -37,8 +67,8 @@ public class GameFrame  extends JFrame {
         changeinformation = new JButton("修改信息");
         changeinformation.setPreferredSize(buttonSize); // 设置大小
 
-        savaAndOutButton = new JButton("存档并退出");
-        savaAndOutButton.setPreferredSize(buttonSize); // 设置大小
+        saveAndOutButton = new JButton("存档并退出");
+        saveAndOutButton.setPreferredSize(buttonSize); // 设置大小
 
         returntologinbutton = new JButton("返回登录");
         returntologinbutton.setPreferredSize(buttonSize); // 设置大小
@@ -52,7 +82,7 @@ public class GameFrame  extends JFrame {
 
         buttonPanel.add(Startbutton);
         buttonPanel.add(changeinformation);
-        buttonPanel.add(savaAndOutButton);
+        buttonPanel.add(saveAndOutButton);
         buttonPanel.add(returntologinbutton);
 
         // 4. 侧边容器 (sidePanel) - 关键步骤！
@@ -72,9 +102,8 @@ public class GameFrame  extends JFrame {
         // 游戏开始前，棋盘应处于不可操作状态
         boardPanel.setGameInteractionEnabled(false);
 
-        // *** 2. 为“点击开始”按钮添加监听器 ***
+        //start button logic
         Startbutton.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
                 // a. 启用棋盘交互
                 boardPanel.setGameInteractionEnabled(true);
@@ -84,9 +113,15 @@ public class GameFrame  extends JFrame {
             }
         });
 
-        // ================= 关键功能实现结束 =================
+       //save logic
+        saveAndOutButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                GamePersistence.saveGame(activeSession);
+                dispose();//close the game window
+            }
+        });
 
-        // 5. 自动调整窗口大小
+        // 自动调整窗口大小
         // pack() 会根据棋盘和按钮的实际大小，自动把窗口收缩到最小（紧贴边缘）
         this.pack();
         this.setVisible(false); // 建议这里设为 true，或者在主程序里设
@@ -107,7 +142,7 @@ public class GameFrame  extends JFrame {
         return this.changeinformation;
     }
 
-    public JButton getSavaAndOutButton() {
-        return this.savaAndOutButton;
+    public JButton getSaveAndOutButton() {
+        return this.saveAndOutButton;
     }
 }

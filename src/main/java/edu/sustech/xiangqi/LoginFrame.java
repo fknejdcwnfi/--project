@@ -29,7 +29,6 @@ public class LoginFrame extends JFrame{
         this.setSize(500, 500);
         this.setLocationRelativeTo(null);
         this.setLayout(new BorderLayout());
-        this.gameFrame = new GameFrame();
         this.loginPanel = new LoginPanel();
         this.signinFrame = new SigninFrame();
         this.changePasswordFrame = new ChangePasswordFrame();
@@ -41,15 +40,26 @@ public class LoginFrame extends JFrame{
 
             //这是登录框架的开始按键的相关响应代码部分
             loginPanel.getLoginButton().addActionListener(e -> {//button指开始的按键
-                if (enteruser(loginPanel.getUsername())>=0)//指用户存在
-                {
+                if (enteruser(loginPanel.getUsername())>=0) {//指用户存在
+                    String inputUsername = loginPanel.getUsername();//Capture the name here
+
                     if(enterpassword(loginPanel.getPassword(),enteruser(loginPanel.getUsername()))){/// /////////////////////////////////////密码正确
                         this.setVisible(false);
+
+                        //=======================================================================================================================
+                        //initialize GameFrame using the successful uername
+                        this.gameFrame = new GameFrame(inputUsername);
+
+                        //set up listeners for the new instance
+                        setupGameFrameListeners();
+                        //===========================================================================================
+
+                        //display the GameFrame
                         gameFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                         gameFrame.pack();
                         gameFrame.getReturntologinbutton().setVisible(true);
                         gameFrame.setLocationRelativeTo(null);
-                        gameFrame.setVisible(true);////////////////////////////////////////////
+                        gameFrame.setVisible(true);
                     }//密码错误
                     else{TimeForDisplayAndLater.displayAndHideJLabel(loginPanel.wrongLabel(),500);
                         loginPanel.unexistLabel().setVisible(false);
@@ -78,12 +88,6 @@ public class LoginFrame extends JFrame{
             this.setVisible(true);
         });
 
-        //从游戏框架回来到登录界面
-        gameFrame.getReturntologinbutton().addActionListener(e -> {
-            gameFrame.setVisible(false); // 隐藏游戏
-            this.setVisible(true); // 显示登录
-        });
-
         //点击确认注册那个按键的操作判定（注册用户的相关判定）
         signinFrame.getConfirmPasswordButton().addActionListener(e->{
             if(rightname(signinFrame.getYourNameTextField()) && passworkcheck(signinFrame.getYourPasswordTextField())){//正确的密码格式和账号格式 //后面是写入对应文本的方法
@@ -105,15 +109,22 @@ public class LoginFrame extends JFrame{
                         Timer jumpTimer = new Timer(500, new ActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent e) {
-                                //signinFrame.getConfirmsuscess().setVisible(false);
                                 // --- 延时 0.5 秒后才执行的跳转逻辑 ---
                                 signinFrame.getConfirmsuscess().setVisible(false);
-                                gameFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                                gameFrame.pack();
-                                gameFrame.getReturntologinbutton().setVisible(true);
-                                gameFrame.setLocationRelativeTo(null);
-                                gameFrame.setVisible(true);
-                                signinFrame.setVisible(false);
+
+                                //create the GameFrame======================================
+                                LoginFrame.this.gameFrame = new GameFrame(signinFrame.getYourNameTextField());
+
+                                //set up listeners for the new instance
+                                LoginFrame.this.setupGameFrameListeners();
+                                //=============================================================
+
+                                LoginFrame.this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                                LoginFrame.this.gameFrame.pack();
+                                LoginFrame.this.gameFrame.getReturntologinbutton().setVisible(true);
+                                LoginFrame.this.gameFrame.setLocationRelativeTo(null);
+                                LoginFrame.this.gameFrame.setVisible(true);
+                                LoginFrame.this.signinFrame.setVisible(false);
                                 // --- 延时跳转逻辑结束 ---
                                 ((Timer) e.getSource()).stop();
                             }
@@ -142,12 +153,6 @@ public class LoginFrame extends JFrame{
 
         });
 
-        ///////////////////////////////////
-        //游戏框架里面的修改信息按键响应代码
-        gameFrame.getChangeinformation().addActionListener(e->{
-            changePasswordFrame.setVisible(true);
-            gameFrame.setVisible(false);
-        });
 
         //改变密码的相关代码（可能是这里出现问题了）
         changePasswordFrame.getChangePasswordButton().addActionListener(e->{
@@ -176,18 +181,34 @@ public class LoginFrame extends JFrame{
                 TimeForDisplayAndLater.displayAndHideJLabel(changePasswordFrame.getErrorTwo(), 800);
             }
         });
+    }
 
+    // Add this method to the LoginFrame class
+    private void setupGameFrameListeners() {
 
+        // 1. From game frame back to login
+        gameFrame.getReturntologinbutton().addActionListener(e -> {
+            gameFrame.setVisible(false); // 隐藏游戏
+            this.setVisible(true); // 显示登录
+        });
+
+        // 2. Game frame change information button
+        gameFrame.getChangeinformation().addActionListener(e->{
+            changePasswordFrame.setVisible(true);
+            gameFrame.setVisible(false);
+        });
+
+        // 3. Game frame return from password change (already defined)
         changePasswordFrame.getReturnToTheGame().addActionListener(e->{
             changePasswordFrame.setVisible(false);
             gameFrame.setVisible(true);
         });
 
-        //////////////////////////////这里是存档和退出的功能（但是现在还没有做具体的功能）
-        gameFrame.getSavaAndOutButton().addActionListener(e->{
+        // 4. Save and Exit button
+        gameFrame.getSaveAndOutButton().addActionListener(e->{
+            // using GamePersistence.saveGame(gameFrame.activeSession)
             gameFrame.setVisible(false);
             gameFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         });
-        /// /////////////////////////
     }
 }

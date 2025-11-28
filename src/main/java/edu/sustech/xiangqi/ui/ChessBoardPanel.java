@@ -38,11 +38,11 @@ public class ChessBoardPanel extends JPanel {
 
     private boolean interactionEnabled = false;
 
-    private CurrentCamp currentCamp = new CurrentCamp();
+    private CurrentCamp currentCamp;
 
-    public ChessBoardPanel(ChessBoardModel model) {
+    public ChessBoardPanel(ChessBoardModel model, CurrentCamp camp) {
         this.model = model;
-
+        this.currentCamp = camp; //initialize with the passed object
         // 1. 设置布局为 null，这样我们可以用 setBounds 随意放置 Label
         this.setLayout(null);
 
@@ -188,7 +188,7 @@ public class ChessBoardPanel extends JPanel {
 
                     //记录普哦她那个移动的情况
                     MoveEveryStep move = new MoveEveryStep(selectedPiece, row, col, null);
-                    model.recordMove(move);
+                    model.recordMove(move);//实现存储和输出文字（在Model方法里面）
                     //这是记录普通的移动过情况
 
                     model.movePiece(selectedPiece, row, col);

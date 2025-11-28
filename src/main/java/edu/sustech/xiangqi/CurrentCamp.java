@@ -1,6 +1,8 @@
 package edu.sustech.xiangqi;
+import java.io.Serializable; // <--- Import this
+// Change the class definition
 
-public class CurrentCamp {
+public class CurrentCamp implements Serializable {
     // true = 红方回合, false = 黑方回合
     private boolean isRedTurn;
 

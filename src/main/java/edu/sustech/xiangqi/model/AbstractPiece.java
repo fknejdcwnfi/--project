@@ -1,6 +1,7 @@
 package edu.sustech.xiangqi.model;
+import java.io.Serializable;
 
-public abstract class AbstractPiece {
+public abstract class AbstractPiece implements Serializable{
     private final String name;
     private final boolean isRed;
     private int row;

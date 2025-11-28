@@ -4,8 +4,9 @@ import edu.sustech.xiangqi.MoveEveryStep;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.io.Serializable;
 
-public class ChessBoardModel {
+public class ChessBoardModel implements Serializable {
     // 储存棋盘上所有的棋子，要实现吃子的话，直接通过pieces.remove(被吃掉的棋子)删除就可以
     private final List<AbstractPiece> pieces;
     private static final int ROWS = 10;

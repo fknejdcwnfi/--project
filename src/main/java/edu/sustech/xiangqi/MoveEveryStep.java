@@ -1,16 +1,9 @@
 package edu.sustech.xiangqi;
 
 import edu.sustech.xiangqi.model.AbstractPiece;
-import edu.sustech.xiangqi.model.ChessBoardModel;
-import edu.sustech.xiangqi.ui.ChessBoardPanel;
+import java.io.Serializable; // <--- IMPORANT: Must add this
 
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-
-import static com.sun.java.accessibility.util.AWTEventMonitor.addMouseListener;
-import static javax.swing.text.html.CSS.Attribute.MARGIN;
-
-public class MoveEveryStep {
+public class MoveEveryStep implements Serializable {
  private final String pieceName;
  private final boolean isRed;
  private final int startRow;
