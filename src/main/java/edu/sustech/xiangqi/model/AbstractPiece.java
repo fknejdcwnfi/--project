@@ -6,6 +6,7 @@ public abstract class AbstractPiece implements Serializable{
     private final boolean isRed;
     private int row;
     private int col;
+    private static final long serialVersionUID = 1L;
 
     public AbstractPiece(String name, int row, int col, boolean isRed) {
         this.name = name;

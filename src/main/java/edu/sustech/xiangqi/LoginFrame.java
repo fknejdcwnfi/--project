@@ -2,6 +2,8 @@ package edu.sustech.xiangqi;
 
 
 
+import edu.sustech.xiangqi.model.ChessBoardModel;
+import edu.sustech.xiangqi.ui.ChessBoardPanel;
 import edu.sustech.xiangqi.ui.LoginPanel;
 
 import javax.swing.*;
@@ -22,6 +24,7 @@ public class LoginFrame extends JFrame{
     private LoginPanel loginPanel;
     private ChangePasswordFrame changePasswordFrame;
     private SigninFrame signinFrame;
+    private ChessBoardPanel chessBoardPanel;
 
     public LoginFrame() {
         super("中国象棋 - 登录");
@@ -43,21 +46,21 @@ public class LoginFrame extends JFrame{
                 if (enteruser(loginPanel.getUsername())>=0) {//指用户存在
                     String inputUsername = loginPanel.getUsername();//Capture the name here
 
-                    if(enterpassword(loginPanel.getPassword(),enteruser(loginPanel.getUsername()))){/// /////////////////////////////////////密码正确
+                    if(enterpassword(loginPanel.getPassword(),enteruser(loginPanel.getUsername()))){//密码正确
                         this.setVisible(false);
 
-                        //=======================================================================================================================
+                        //=================================================================
                         //initialize GameFrame using the successful uername
                         this.gameFrame = new GameFrame(inputUsername);
 
                         //set up listeners for the new instance
                         setupGameFrameListeners();
-                        //===========================================================================================
+                        //=================================================================
 
                         //display the GameFrame
                         gameFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                         gameFrame.pack();
-                        gameFrame.getReturntologinbutton().setVisible(true);
+                        gameFrame. getRestartButton().setVisible(true);
                         gameFrame.setLocationRelativeTo(null);
                         gameFrame.setVisible(true);
                     }//密码错误
@@ -82,7 +85,7 @@ public class LoginFrame extends JFrame{
             this.setVisible(false);
         });
 
-        //从注册界面回到登录界面
+        //从注册界面回到登录界面==============================================================
         signinFrame.getReturnButton().addActionListener(e -> {
             signinFrame.setVisible(false);
             this.setVisible(true);
@@ -121,7 +124,7 @@ public class LoginFrame extends JFrame{
 
                                 LoginFrame.this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                                 LoginFrame.this.gameFrame.pack();
-                                LoginFrame.this.gameFrame.getReturntologinbutton().setVisible(true);
+                                LoginFrame.this.gameFrame.getRestartButton().setVisible(true);
                                 LoginFrame.this.gameFrame.setLocationRelativeTo(null);
                                 LoginFrame.this.gameFrame.setVisible(true);
                                 LoginFrame.this.signinFrame.setVisible(false);
@@ -154,7 +157,7 @@ public class LoginFrame extends JFrame{
         });
 
 
-        //改变密码的相关代码（可能是这里出现问题了）
+        //改变密码的相关代码
         changePasswordFrame.getChangePasswordButton().addActionListener(e->{
             // 1. 获取用户索引
             int userIndex = InterChecking.enteruser(changePasswordFrame.theUserNameText());
@@ -183,13 +186,20 @@ public class LoginFrame extends JFrame{
         });
     }
 
-    // Add this method to the LoginFrame class
+    //把所有相应器都放到这里了
     private void setupGameFrameListeners() {
-
-        // 1. From game frame back to login
-        gameFrame.getReturntologinbutton().addActionListener(e -> {
-            gameFrame.setVisible(false); // 隐藏游戏
-            this.setVisible(true); // 显示登录
+        // =====================================================================
+        //重新开始的响应器
+        gameFrame.getRestartButton().addActionListener(e -> {
+            PlayGameSession newActiveSession = new PlayGameSession(gameFrame.getActiveSession().getPlayerNameID());//全新棋盘和红棋子先走
+            gameFrame.setActiveSessionModel(newActiveSession);
+            gameFrame.setCurrentCamp(newActiveSession.getCurrentCamp());
+            //Update the ChessBoardPanel's reference to the new model and camp.
+            gameFrame.getBoardPanel().setNewGameModel(newActiveSession.getChessBoardModel(), newActiveSession.getCurrentCamp());
+            gameFrame.getStartbutton().setEnabled(true);
+            gameFrame.getStartbutton().setText("点击开始");
+            gameFrame.getBoardPanel().setGameInteractionEnabled(false);
+            gameFrame.repaint(); // Force GameFrame to redraw everything
         });
 
         // 2. Game frame change information button
@@ -209,6 +219,24 @@ public class LoginFrame extends JFrame{
             // using GamePersistence.saveGame(gameFrame.activeSession)
             gameFrame.setVisible(false);
             gameFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        });
+
+        //5. 悔棋的响应器
+        gameFrame.getTakeBackAMove().addActionListener(e->{
+            ChessBoardModel model = gameFrame.getActiveSession().getChessBoardModel();
+            CurrentCamp currentCamp = gameFrame.getActiveSession().getCurrentCamp();
+            ChessBoardPanel boardPanel = gameFrame.getBoardPanel();
+
+            if (model.getMoveHistory().isEmpty()) {
+                boardPanel.setStatusMessage("无法悔棋", Color.RED);
+                return;
+            }
+
+            model.removeLastMove();
+            currentCamp.returnTurn();
+            boardPanel.setNewGameModel(model, currentCamp);
+            boardPanel.setStatusMessage("悔棋成功！", Color.BLUE);
+            gameFrame.repaint();
         });
     }
 }

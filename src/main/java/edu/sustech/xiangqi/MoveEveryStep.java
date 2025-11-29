@@ -4,22 +4,29 @@ import edu.sustech.xiangqi.model.AbstractPiece;
 import java.io.Serializable; // <--- IMPORANT: Must add this
 
 public class MoveEveryStep implements Serializable {
- private final String pieceName;
- private final boolean isRed;
- private final int startRow;
- private final int startCol;
- private final int endRow;
- private final int endCol;
- private final String capturedPieceName;
+    private static final long serialVersionUID = 1L;
+    private final String pieceName;
+    private AbstractPiece capturedPiece;
+    private AbstractPiece movingPiece;
+    private final boolean isRed;
+    private final int startRow;
+    private final int startCol;
+    private final int endRow;
+    private final int endCol;
+    private final String capturedPieceName;
+    private CurrentCamp currentCamp;
 
- public MoveEveryStep(AbstractPiece piece, int newRow, int newCol, AbstractPiece target) {//参数用的是对象
+ public MoveEveryStep(AbstractPiece piece, int newRow, int newCol, AbstractPiece target, CurrentCamp camp) {//参数用的是对象
      this.pieceName = piece.getName();
+     this.movingPiece = piece;
      this.isRed = piece.isRed();
      this.startRow = piece.getRow();
      this.startCol = piece.getCol();
      this.endRow = newRow;
      this.endCol = newCol;
      this.capturedPieceName = (target != null) ? target.getName() : null;
+     this.capturedPiece = target;
+     this.currentCamp = camp;
      //piece指的是我要移动的棋子
      //newrow是新的行
      //newcol是目标列
@@ -33,19 +40,31 @@ public class MoveEveryStep implements Serializable {
      return String.format("%s: %s 从 (%d, %d) %s 到 (%d, %d)\n", camp, pieceName, startRow, startCol, action, endRow, endCol);
     }
 
-public int  getStartRow() {
+    public int  getStartRow() {
     return startRow;
 }
 
-public int getStartCol() {
+    public int getStartCol() {
       return startCol;
-}
+ }
 
-public int getEndRow() {
+    public int getEndRow() {
       return endRow;
 }
 
-public int getEndCol() {
+    public int getEndCol() {
       return endCol;
 }
+
+    public AbstractPiece getCapturedPiece() {
+     return this.capturedPiece;
+  }
+
+    public AbstractPiece getMovingPiece() {
+     return this.movingPiece;
+  }
+
+  public CurrentCamp getCurrentCamp() {
+     return this.currentCamp;
+  }
 }

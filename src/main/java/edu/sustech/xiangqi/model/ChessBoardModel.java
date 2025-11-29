@@ -1,5 +1,6 @@
 package edu.sustech.xiangqi.model;
 
+import edu.sustech.xiangqi.CurrentCamp;
 import edu.sustech.xiangqi.MoveEveryStep;
 
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ public class ChessBoardModel implements Serializable {
     private static final int ROWS = 10;
     private static final int COLS = 9;
     private final List<MoveEveryStep> moveHistory;
-
+    private static final long serialVersionUID = 1L;
 
     public ChessBoardModel() {
         pieces = new ArrayList<>();
@@ -114,5 +115,39 @@ public class ChessBoardModel implements Serializable {
 
     public List<MoveEveryStep> getMoveHistory() {
         return moveHistory;
+    }
+
+    public void removeLastMove() {
+
+        if (moveHistory.isEmpty()) {
+            System.out.println("Error: Cannot take back a move. Move history is empty.");
+            return;
+        }
+        MoveEveryStep lastMove = moveHistory.remove(moveHistory.size() - 1);
+        trulyPhysicalMove(lastMove);
+
+    }
+
+    private void trulyPhysicalMove(MoveEveryStep move) {
+        //下面的是获取最后一步的移动棋子
+
+        AbstractPiece movingPiece = move.getMovingPiece();
+
+        if (movingPiece == null) {
+            System.err.println("CRITICAL: Moving piece in history is null. Cannot undo.");
+            // You might consider re-adding the move to history here if you can't undo.
+            return;
+        }
+
+        //下面是将移动棋子移动会原来的位置（开始位置）
+        if  (movingPiece != null) {
+            movingPiece.moveTo(move.getStartRow(), move.getStartCol());
+        }
+        //下面的是获取最后一步的被吃棋子
+        AbstractPiece capturedPiece = move.getCapturedPiece();
+        if (capturedPiece != null) {
+            pieces.add(capturedPiece);//在当前的棋子model中加上被吃的棋子
+            capturedPiece.moveTo(move.getEndRow(), move.getEndCol());//把背吃的棋子移动到最终的位置
+        }
     }
 }

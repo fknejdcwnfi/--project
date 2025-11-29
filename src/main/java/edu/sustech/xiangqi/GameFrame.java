@@ -8,19 +8,19 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File; // Import this
 
 public class GameFrame  extends JFrame {
 
-    // --- NEW FIELDS ---
+    //  NEW
     private PlayGameSession activeSession;
     private ChessBoardPanel boardPanel;
-    // ------------------
+    //
 
     private JButton Startbutton;
     private JButton changeinformation;
     private JButton saveAndOutButton;
-    private JButton returntologinbutton;
+    private JButton restartButton;
+    private JButton takeBackAMove;
 
     public GameFrame(String playerName) {
 
@@ -44,15 +44,13 @@ public class GameFrame  extends JFrame {
             Startbutton = new JButton("游戏中");
             Startbutton.setEnabled(false);
         }
-/// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//===============================================================================
 
-/// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//===============================================================================
         // 1. creat棋盘面板 (CENTER)
         ChessBoardModel model = activeSession.getChessBoardModel();
         CurrentCamp currentCamp = activeSession.getCurrentCamp();// You'll need to update ChessBoardPanel
         this.boardPanel = new ChessBoardPanel(model, currentCamp);
-
-        //chessboardpanel needs to be updated to accept CurrentCamp
 
         this.boardPanel.setGameInteractionEnabled(!Startbutton.isEnabled());// Match state of button
 
@@ -61,7 +59,6 @@ public class GameFrame  extends JFrame {
         // 创建一个统一的尺寸，例如：宽 120，高 40 (根据你的喜好调整)
         Dimension buttonSize = new Dimension(120, 40);
 
-        Startbutton = new JButton("点击开始");
         Startbutton.setPreferredSize(buttonSize); // 设置大小
 
         changeinformation = new JButton("修改信息");
@@ -70,8 +67,11 @@ public class GameFrame  extends JFrame {
         saveAndOutButton = new JButton("存档并退出");
         saveAndOutButton.setPreferredSize(buttonSize); // 设置大小
 
-        returntologinbutton = new JButton("返回登录");
-        returntologinbutton.setPreferredSize(buttonSize); // 设置大小
+        restartButton = new JButton("重新开始");
+        restartButton.setPreferredSize(buttonSize); // 设置大小
+
+        takeBackAMove = new JButton("悔一下棋");
+        takeBackAMove.setPreferredSize(buttonSize);
 
         // 3. 按钮内部布局 (buttonPanel)
         // 依然使用 GridLayout 排列4个按钮，但这次只负责排列，不负责拉伸整个页面
@@ -83,7 +83,8 @@ public class GameFrame  extends JFrame {
         buttonPanel.add(Startbutton);
         buttonPanel.add(changeinformation);
         buttonPanel.add(saveAndOutButton);
-        buttonPanel.add(returntologinbutton);
+        buttonPanel.add(restartButton);
+        buttonPanel.add(takeBackAMove);
 
         // 4. 侧边容器 (sidePanel) - 关键步骤！
         // 我们用一个新面板包裹 buttonPanel，防止它被 BorderLayout 拉伸
@@ -95,14 +96,7 @@ public class GameFrame  extends JFrame {
         // 将这个不拉伸的容器放到窗口右侧
         this.add(sidePanel, BorderLayout.EAST);
 
-        // ================= 关键功能实现开始 =================
-
-        // *** 1. 默认禁用棋盘交互 ***
-        // 您需要在 ChessBoardPanel 中实现 setGameInteractionEnabled 方法
-        // 游戏开始前，棋盘应处于不可操作状态
-        boardPanel.setGameInteractionEnabled(false);
-
-        //start button logic
+        //=============================================================
         Startbutton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // a. 启用棋盘交互
@@ -133,10 +127,13 @@ public class GameFrame  extends JFrame {
     }
 
 
-    public JButton getReturntologinbutton() {
-        return returntologinbutton;
+    public JButton getRestartButton() {
+        return restartButton;
     }
 
+    public JButton getTakeBackAMove() {
+        return takeBackAMove;
+    }
 
     public JButton getChangeinformation() {
         return this.changeinformation;
@@ -144,5 +141,33 @@ public class GameFrame  extends JFrame {
 
     public JButton getSaveAndOutButton() {
         return this.saveAndOutButton;
+    }
+
+    public PlayGameSession getActiveSession() {
+        return this.activeSession;
+    }
+
+    public void setActiveSessionModel(PlayGameSession newActiveSession) {
+        getActiveSession().setModel(newActiveSession.getChessBoardModel());
+    }
+
+    public void setCurrentCamp(CurrentCamp newCurrentCamp) {
+        getActiveSession().setCurrentCamp(newCurrentCamp);
+    }
+
+    public ChessBoardPanel getBoardPanel() {
+        return this.boardPanel;
+    }
+
+    public ChessBoardModel getChessBoardModel() {
+        return this.activeSession.getChessBoardModel();
+    }
+
+    public JButton getStartbutton() {
+        return this.Startbutton;
+    }
+
+    public CurrentCamp getCurrentCamp() {
+        return this.activeSession.getCurrentCamp();
     }
 }

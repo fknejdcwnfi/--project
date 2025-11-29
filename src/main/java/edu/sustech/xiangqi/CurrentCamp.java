@@ -1,10 +1,11 @@
 package edu.sustech.xiangqi;
-import java.io.Serializable; // <--- Import this
-// Change the class definition
+import java.io.Serializable;
+
 
 public class CurrentCamp implements Serializable {
     // true = 红方回合, false = 黑方回合
     private boolean isRedTurn;
+    private static final long serialVersionUID = 1L;
 
     public CurrentCamp() {
         // 默认游戏开始时是红方先走
@@ -25,6 +26,9 @@ public class CurrentCamp implements Serializable {
         this.isRedTurn = !this.isRedTurn;
     }
 
+    public void returnTurn() {
+        this.isRedTurn = !this.isRedTurn;
+    }
     /**
      * 重置为红方（用于新游戏开始）
      */

@@ -5,6 +5,7 @@ import java.io.Serializable; // <--- Import this
 // Change the class definition
 
 public class PlayGameSession implements Serializable{//这是玩家状态属性的类，用来让玩家成为一个对象
+    private static final long serialVersionUID = 1L;
     private String PlayerNameID;
     private ChessBoardModel chessBoardModel;
     private CurrentCamp currentCamp;
@@ -21,6 +22,10 @@ public class PlayGameSession implements Serializable{//这是玩家状态属性�
 
     public CurrentCamp getCurrentCamp() {
         return currentCamp;
+    }
+
+    public void setCurrentCamp(CurrentCamp currentCamp) {
+        this.currentCamp = currentCamp;
     }
 
     public String getPlayerNameID() {

@@ -1,7 +1,6 @@
 package edu.sustech.xiangqi.ui;
 
 import edu.sustech.xiangqi.CurrentCamp;
-import edu.sustech.xiangqi.GameFrame;
 import edu.sustech.xiangqi.MoveEveryStep;
 import edu.sustech.xiangqi.model.ChessBoardModel;
 import edu.sustech.xiangqi.model.AbstractPiece;
@@ -14,7 +13,7 @@ import javax.swing.Timer;
 
 
 public class ChessBoardPanel extends JPanel {
-    private final ChessBoardModel model;
+    private ChessBoardModel model;
 
     // 新增：定义一个全局的提示标签
     private JLabel statusLabel;
@@ -91,21 +90,17 @@ public class ChessBoardPanel extends JPanel {
         }
         statusLabel.setVisible(true); // 确保文字显示
     }
-
     public ChessBoardModel model() {
         return model;
     }
 
-    /// /////////////////////////////////////////////////////////////////////////////////////////
+    //=====================================================================
     public void setGameInteractionEnabled(boolean enabled) {
         this.interactionEnabled = enabled; // 使用 this
 
         if (interactionEnabled) {
             // 游戏开始
-            currentCamp.reset(); // 重置为红方先走
             updateTurnLabel();   // 显示 "当前回合：红方"
-            // 注意：这里不需要 Timer 自动隐藏了，因为回合提示需要一直显示让玩家知道该谁走
-
         } else {
             // 禁用时：一直显示提示
             statusLabel.setText("请点击开始");
@@ -116,15 +111,15 @@ public class ChessBoardPanel extends JPanel {
         repaint();
     }
 
-    /// ////////////////////////////////////////////////
-    ///
+    //===========================================================================
+
     private void handleMouseClick(int x, int y) {
 
-        // *** 关键检查 ***/////////////////////////////////////////////////////////////////
+        // *** 关键检查 ***//===========================================================
         if (!interactionEnabled) {
             return;
         }
-        /// ///////////////////////////////////////////////////////////////////////////////
+        //==============================================================================
 
         int col = Math.round((float) (x - MARGIN) / CELL_SIZE);
         int row = Math.round((float) (y - MARGIN) / CELL_SIZE);
@@ -167,7 +162,7 @@ public class ChessBoardPanel extends JPanel {
                 if (selectedPiece.canMoveTo(row, col, model)) {
 
                     //记录吃子的情况先记录在移除
-                    MoveEveryStep move = new MoveEveryStep(selectedPiece, row, col, target);
+                    MoveEveryStep move = new MoveEveryStep(selectedPiece, row, col, target,this.currentCamp);
                     model.recordMove(move);
                     //这是记录棋子的吃子情况
 
@@ -187,7 +182,7 @@ public class ChessBoardPanel extends JPanel {
                 if (selectedPiece.canMoveTo(row, col, model)) {
 
                     //记录普哦她那个移动的情况
-                    MoveEveryStep move = new MoveEveryStep(selectedPiece, row, col, null);
+                    MoveEveryStep move = new MoveEveryStep(selectedPiece, row, col, null,this.currentCamp);
                     model.recordMove(move);//实现存储和输出文字（在Model方法里面）
                     //这是记录普通的移动过情况
 
@@ -345,5 +340,34 @@ public class ChessBoardPanel extends JPanel {
                 centerX + cornerSize - lineLength, centerY + cornerSize);
         g.drawLine(centerX + cornerSize, centerY + cornerSize,
                 centerX + cornerSize, centerY + cornerSize - lineLength);
+    }
+
+    public void setNewGameModel(ChessBoardModel newModel, CurrentCamp newCamp) {//重新为棋盘赋值（重新开始游戏）
+        this.model = newModel;
+        this.currentCamp = newCamp;
+        this.selectedPiece = null; // Clear any selected piece
+        this.repaint();
+    }
+
+     //全局的文字 method
+    public void setStatusMessage(String statusMessage, Color color) {
+        statusLabel.setText(statusMessage);
+        statusLabel.setForeground(color);
+        statusLabel.setVisible(true);
+
+        Timer timer = new Timer(1500, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // After the message fades, restore the turn display
+                if (interactionEnabled) {
+                    updateTurnLabel();
+                } else {
+                    statusLabel.setVisible(false);
+                }
+                ((Timer) e.getSource()).stop();
+            }
+        });
+        timer.setRepeats(false);
+        timer.start();
     }
 }
