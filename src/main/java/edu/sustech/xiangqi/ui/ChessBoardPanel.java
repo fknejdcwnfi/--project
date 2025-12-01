@@ -8,6 +8,7 @@ import edu.sustech.xiangqi.model.AbstractPiece;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 import javax.swing.Timer;
 
 
@@ -38,6 +39,9 @@ public class ChessBoardPanel extends JPanel {
     private boolean interactionEnabled = false;
 
     private CurrentCamp currentCamp;
+
+    //调用那个检测下一步的红圈标记方法。
+    private java.util.List<Point> legalMoves = new ArrayList<>();
 
     public ChessBoardPanel(ChessBoardModel model, CurrentCamp camp) {
         this.model = model;
@@ -135,6 +139,7 @@ public class ChessBoardPanel extends JPanel {
             if (piece != null) {
                 if (piece.isRed() == currentCamp.isRedTurn()) {
                     selectedPiece = piece; // 选中成功
+                    calculateLegalMoves(selectedPiece);
                 } else {
                     statusLabel.setText("现在不是你的回合！");
                     statusLabel.setForeground(Color.BLUE);
@@ -153,14 +158,21 @@ public class ChessBoardPanel extends JPanel {
             if (target != null && target.isRed() == selectedPiece.isRed()) {
                 // 只有也是己方棋子才换选中，否则视为移动目标
                 selectedPiece = target;
+                calculateLegalMoves(selectedPiece);//=====================
+
                 repaint();
                 return; // 仅仅是换了选中的子，不切换回合
             }
             // B. 点击了空地或敌人 -> 尝试移动
             if (target != null) {
-                // 在目标仍存在时判断吃子是否合法（Pao 的 canMoveTo 会检查“中间恰好有1个”的规则）
-                if (selectedPiece.canMoveTo(row, col, model)) {
+                if (target.isRed() == selectedPiece.isRed()) {
+                    selectedPiece = target;
+                    calculateLegalMoves(selectedPiece); // 重新计算合法位置
+                    repaint();
+                    return; // 直接返回，不执行后续吃子逻辑
+                }
 
+                if (selectedPiece.canMoveTo(row, col, model)) {
                     //记录吃子的情况先记录在移除
                     MoveEveryStep move = new MoveEveryStep(selectedPiece, row, col, target,this.currentCamp);
                     model.recordMove(move);
@@ -191,12 +203,15 @@ public class ChessBoardPanel extends JPanel {
                     moveSuccess = true;
                 } else {
                     selectedPiece = null;
+                    legalMoves.clear(); // 新增：清空红圈
                     repaint();//同上
                     return;
                 }
             }
             if (moveSuccess) {
                 currentCamp.nextTurn(); // 切换红黑
+                legalMoves.clear();
+                selectedPiece=null;
                 updateTurnLabel();      // 更新界面文字
             }
         }
@@ -217,6 +232,7 @@ public class ChessBoardPanel extends JPanel {
         // 因此绘制GUI的过程中需要自己手动计算每个组件的位置（坐标）
         drawBoard(g2d);
         drawPieces(g2d);
+        drawLegalMoves(g);//new bulid
     }
 
     /**
@@ -369,5 +385,54 @@ public class ChessBoardPanel extends JPanel {
         });
         timer.setRepeats(false);
         timer.start();
+    }
+
+    private void calculateLegalMoves(AbstractPiece piece) {
+        System.out.println("进入calculateLegalMoves方法");
+        legalMoves.clear(); // 清空旧位置
+
+        if (piece == null) {
+            System.out.println("选中棋子为null，退出");
+            return;
+        }
+        // 遍历棋盘所有位置，检查是否合法
+        for (int row = 0; row < ChessBoardModel.getRows(); row++) {
+            for (int col = 0; col < ChessBoardModel.getCols(); col++) {
+                if (piece.canMoveTo(row, col, model)) {
+                    legalMoves.add(new Point(row, col)); // 保存合法位置
+                }
+            }
+        }
+        System.out.println("合法位置数量：" + legalMoves.size());
+    }
+
+    private void drawLegalMoves(Graphics g) {
+        // 未选中棋子或无合法位置，直接返回
+        if (selectedPiece == null || legalMoves.isEmpty()) {
+            return;
+        }
+
+        // 设置红圈样式：红色、细边框（避免太粗）
+        g.setColor(new Color(255, 60, 60));
+        ((Graphics2D) g).setStroke(new BasicStroke(2)); // 细一点的线
+
+        // 遍历合法位置绘制红圈
+        for (Point p : legalMoves) {
+            int row = p.x; // 行坐标（对应y轴）
+            int col = p.y; // 列坐标（对应x轴）
+
+            // 计算红圈中心点坐标（格子的正中心）
+            int centerX = MARGIN + col * CELL_SIZE;//change
+            int centerY = MARGIN + row * CELL_SIZE;//change
+
+            // 绘制红圈：半径为格子的1/4，避免太大
+            int radius = PIECE_RADIUS / 3;
+            g.fillOval(
+                    centerX - radius,  // 左上角x
+                    centerY - radius,  // 左上角y
+                    radius * 2,        // 宽
+                    radius * 2         // 高
+            );
+        }
     }
 }
