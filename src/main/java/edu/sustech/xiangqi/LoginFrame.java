@@ -216,11 +216,16 @@ public class LoginFrame extends JFrame{
             gameFrame.repaint(); // Force GameFrame to redraw everything
         });
 
+
         // 2. Game frame change information button
+        //=====================================================
         gameFrame.getChangeinformation().addActionListener(e->{
+            GamePersistence.saveGame(gameFrame.getActiveSession());
             changePasswordFrame.setVisible(true);
             gameFrame.setVisible(false);
         });
+        //=====================================================
+
 
         // 3. Game frame return from password change (already defined)
         changePasswordFrame.getReturnToTheGame().addActionListener(e->{
