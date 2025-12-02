@@ -58,8 +58,10 @@ public class GameFrame  extends JFrame {
         ChessBoardModel model = activeSession.getChessBoardModel();
         CurrentCamp currentCamp = activeSession.getCurrentCamp();// You'll need to update ChessBoardPanel
         this.boardPanel = new ChessBoardPanel(model, currentCamp);
+        model.setView(this.boardPanel);
         this.boardPanel.setGameInteractionEnabled(!Startbutton.isEnabled());// Match state of button
         this.add(boardPanel, BorderLayout.CENTER);
+
 
         // 2. 按钮的具体设置
         // 创建一个统一的尺寸，例如：宽 120，高 40 (根据你的喜好调整)

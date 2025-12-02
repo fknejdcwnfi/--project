@@ -3,7 +3,7 @@ package edu.sustech.xiangqi.model;
 /**
  * 帅/将
  */
-public class GeneralPiece extends AbstractPiece {
+public class GeneralPiece extends AbstractPiece implements Cloneable {
 
     public GeneralPiece(String name, int row, int col, boolean isRed) {
         super(name, row, col, isRed);

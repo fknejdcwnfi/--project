@@ -1,7 +1,7 @@
 package edu.sustech.xiangqi.model;
 import java.io.Serializable;
 
-public abstract class AbstractPiece implements Serializable{
+public abstract class AbstractPiece implements Serializable,Cloneable{
     private final String name;
     private final boolean isRed;
     private int row;
@@ -49,4 +49,14 @@ public abstract class AbstractPiece implements Serializable{
      * @return 是否可以移动
      */
     public abstract boolean canMoveTo(int targetRow, int targetCol, ChessBoardModel model);
+
+    // 重写clone方法
+    @Override
+    public Object clone() {
+        try {
+            return super.clone(); // 浅克隆足够应对当前成员变量
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError("克隆失败", e);
+        }
+    }
 }

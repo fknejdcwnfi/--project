@@ -173,6 +173,31 @@ public class ChessBoardPanel extends JPanel {
                 }
 
                 if (selectedPiece.canMoveTo(row, col, model)) {
+
+                    // Start of Self-Check Logic for Capture
+                    ChessBoardModel currentModel = model.deepCopy();
+                    AbstractPiece pieceToMoveInCopy = currentModel.getPieceAt(selectedPiece.getRow(), selectedPiece.getCol());
+                    AbstractPiece targetPieceInCopy = currentModel.getPieceAt(row,col);
+
+                    // Simulate the move in the copy
+                    if (targetPieceInCopy != null) {
+                        currentModel.remove(targetPieceInCopy); // Remove target
+                    }
+                    if (pieceToMoveInCopy != null) {
+                        currentModel.movePieceForce(pieceToMoveInCopy, row, col);
+                    }
+
+                    // Check for self-check
+                    boolean isSelfCheck = currentModel.isInCheck(currentCamp.isRedTurn());
+                    if (isSelfCheck) {
+                        setStatusMessage("此步将导致您的帅/将被攻击，请重新选择！", Color.RED);
+                        selectedPiece = null;
+                        legalMoves.clear();
+                        repaint();
+                        return; // ABORT move
+                    }
+                    // End of Self-Check Logic
+
                     //记录吃子的情况先记录在移除
                     MoveEveryStep move = new MoveEveryStep(selectedPiece, row, col, target,this.currentCamp);
                     model.recordMove(move);
@@ -192,6 +217,23 @@ public class ChessBoardPanel extends JPanel {
             } else {
                 // 目标为空，走普通移动，使用正常的 movePiece（含校验）
                 if (selectedPiece.canMoveTo(row, col, model)) {
+                    //start of self-check logic for simple move
+                    ChessBoardModel currentModel = model.deepCopy();
+                    AbstractPiece pieceToMoveInCopy = currentModel.getPieceAt(selectedPiece.getRow(), selectedPiece.getCol());
+
+                    if (pieceToMoveInCopy != null) {
+                        currentModel.movePieceForce(pieceToMoveInCopy, row, col);
+                    }
+
+                    boolean isSelfCheck = currentModel.isInCheck(currentCamp.isRedTurn());
+                    if (isSelfCheck) {
+                        setStatusMessage("此步将导致您的帅/将被攻击，请重新选择！", Color.RED);
+                        selectedPiece = null;
+                        legalMoves.clear();
+                        repaint();
+                        return;
+                    }
+                    //the end of self check logic
 
                     //记录普哦她那个移动的情况
                     MoveEveryStep move = new MoveEveryStep(selectedPiece, row, col, null,this.currentCamp);
@@ -209,10 +251,34 @@ public class ChessBoardPanel extends JPanel {
                 }
             }
             if (moveSuccess) {
+                // 1. 先获取移动前的阵营（关键：此时还未切换回合）
+                boolean isRedTurn = currentCamp.isRedTurn();
+                boolean isCheck;
+                boolean messageShown = false; // <--- ADD THIS FLAG
+
+                // 2. 根据移动前的阵营，检测对方是否被将军
+                if (isRedTurn) {
+                    isCheck = model.isInCheck(false); // 红方走后检测黑方
+                    if (isCheck) {
+                        setStatusMessage("红方将黑方", Color.BLACK);
+                        messageShown = true;
+                    }
+                } else {
+                    isCheck = model.isInCheck(true); // 黑方走后检测红方
+                    if (isCheck) {
+                        setStatusMessage("黑方将红方", Color.RED);
+                        messageShown = true;
+                    }
+                }
                 currentCamp.nextTurn(); // 切换红黑
                 legalMoves.clear();
                 selectedPiece=null;
-                updateTurnLabel();      // 更新界面文字
+
+                if (!messageShown) {//Only update turn label if we didn't just show a warning
+                    updateTurnLabel();
+                }
+                // If messageShown is true, your Timer in setStatusMessage will
+                // automatically call updateTurnLabel() after 1.5 seconds.
             }
         }
 
@@ -398,6 +464,10 @@ public class ChessBoardPanel extends JPanel {
         // 遍历棋盘所有位置，检查是否合法
         for (int row = 0; row < ChessBoardModel.getRows(); row++) {
             for (int col = 0; col < ChessBoardModel.getCols(); col++) {
+                AbstractPiece target = model.getPieceAt(row, col);
+                if (target != null && target.isRed() == piece.isRed()) {
+                    continue; // Skip this position (cannot eat own piece)
+                }
                 if (piece.canMoveTo(row, col, model)) {
                     legalMoves.add(new Point(row, col)); // 保存合法位置
                 }

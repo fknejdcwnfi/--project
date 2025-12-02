@@ -1,11 +1,12 @@
 package edu.sustech.xiangqi.model;
 
-import edu.sustech.xiangqi.CurrentCamp;
 import edu.sustech.xiangqi.MoveEveryStep;
+import edu.sustech.xiangqi.ui.ChessBoardPanel;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.io.Serializable;
+
 
 public class ChessBoardModel implements Serializable {
     // 储存棋盘上所有的棋子，要实现吃子的话，直接通过pieces.remove(被吃掉的棋子)删除就可以
@@ -14,11 +15,21 @@ public class ChessBoardModel implements Serializable {
     private static final int COLS = 9;
     private final List<MoveEveryStep> moveHistory;
     private static final long serialVersionUID = 1L;
+    private transient ChessBoardPanel view; // Add this line
 
     public ChessBoardModel() {
         pieces = new ArrayList<>();
         moveHistory = new ArrayList<>();
         initializePieces();
+    }
+
+    public void setView(ChessBoardPanel view) {
+        this.view = view;
+    }
+
+    // 添加棋子的方法
+    public void addPiece(AbstractPiece piece) {
+        pieces.add(piece);
     }
 
     private void initializePieces() {
@@ -84,7 +95,7 @@ public class ChessBoardModel implements Serializable {
         }
 
         if (!piece.canMoveTo(newRow, newCol, this)) {//这里的this指当前调用该方法的对象‌，即‌调用 movePiece 方法的棋盘对象
-                return false;
+            return false;
         }
         piece.moveTo(newRow, newCol);
         return true;
@@ -150,4 +161,77 @@ public class ChessBoardModel implements Serializable {
             capturedPiece.moveTo(move.getEndRow(), move.getEndCol());//把背吃的棋子移动到最终的位置
         }
     }
+
+    public AbstractPiece findGeneral(boolean isRed) {
+        for (AbstractPiece piece : getPieces()) {
+            // 假设帅/将的name是“帅”或“将”，或通过类型判断（如GeneralPiece）
+            if ( (piece.getName().equals("帅") || piece.getName().equals("將"))
+                    && piece.isRed() == isRed) {
+                return piece;
+            }
+        }
+        return null; // 理论上不会出现，游戏中帅/将必存在
+    }
+
+    /**
+     * 判断当前回合方是否被将军（isRedTurn为true时，红方帅是否被黑方攻击）
+     */
+    public boolean isInCheck(boolean isRedTurn) {
+        // 1. 找到当前回合方的帅/将
+        AbstractPiece general = findGeneral(isRedTurn);
+        AbstractPiece opponentGeneral = findGeneral(!isRedTurn);
+        if (general == null || opponentGeneral == null) return false;
+        // ----------------------------------------------------
+        // *** CRITICAL FIX: General Face-Off (Flying General) Check ***
+        // ----------------------------------------------------
+        int genRow = general.getRow();
+        int genCol = general.getCol();
+        int oppRow = opponentGeneral.getRow();
+        int oppCol = opponentGeneral.getCol();
+
+        if (genCol == oppCol) {
+            boolean clearPath = true;
+
+            int startRow = Math.min(genRow, oppRow) + 1;
+            int endRow = Math.max(genRow, oppRow);
+
+            for (int i = startRow; i <= endRow; i++) {
+                if (getPieceAt(i, genCol) != null) {
+                    clearPath = false;
+                    break;
+                }
+            }
+            if (clearPath) {
+                return true;
+            }
+        }
+        //==============================================================
+
+        // 2. 遍历对方所有棋子，检查是否能移动到帅/将位置
+        boolean isRedGeneral = general.isRed();
+        for (AbstractPiece attacker : getPieces()) {
+            // 只检查对方棋子（红帅被黑棋攻击，黑将被红棋攻击）
+            if (attacker.isRed() == isRedGeneral) continue;
+            // 关键：调用棋子的canMoveTo，判断是否能攻击帅/将
+            if (attacker.canMoveTo(genRow, genCol, this)) {
+                //ChessBoardPanel.setStatusMessage();
+                return true; // 存在能攻击帅/将的棋子，判定为将军
+            }
+        }
+        return false;
+    }
+
+    public ChessBoardModel deepCopy() {
+        ChessBoardModel copy = new ChessBoardModel();
+        // 复制所有棋子（需确保AbstractPiece实现Cloneable）
+
+        copy.pieces.clear();//"Ghost" Pieces?
+
+        for (AbstractPiece piece : getPieces()) {
+            AbstractPiece pieceCopy = (AbstractPiece) piece.clone();
+            copy.addPiece(pieceCopy);
+        }
+        return copy;
+    }
 }
+
