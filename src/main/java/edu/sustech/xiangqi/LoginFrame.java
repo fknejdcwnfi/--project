@@ -299,11 +299,21 @@ public class LoginFrame extends JFrame{
 
                 gameFrame.getBoardPanel().setStatusMessage(winner + "胜利！（" + loser + "认输）", Color.GREEN, true);
                 gameFrame.hideGiveUpOption();
+                gameFrame.getEndUpPeaceButton().setEnabled(false);
                 gameFrame.getBoardPanel().setGameInteractionEnabled(false);
-
-
             }
         });
 
+        gameFrame.getEndUpPeaceButton().addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (!gameFrame.getActiveSession().getChessBoardModel().getMoveHistory().isEmpty()) {
+                gameFrame.getBoardPanel().setStatusMessage("双方和棋！", Color.GREEN, true);
+                gameFrame.hideGiveUpOption();
+                gameFrame.getBoardPanel().setGameInteractionEnabled(false);
+                } else {
+                    return;
+                }
+            }
+        });
     }
 }

@@ -24,11 +24,13 @@ public class GameFrame  extends JFrame {
     private JButton giveUpButton;
     private JButton endUpPeaceButton;
     private boolean isTourist;
+    private String playerName;
 
     public GameFrame(String playerName) {
 
         super("中国象棋");
         this.isTourist = (playerName == null ||playerName.isEmpty());
+        this.playerName = playerName;
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLocationRelativeTo(null);
         this.setLayout(new BorderLayout());
@@ -91,13 +93,24 @@ public class GameFrame  extends JFrame {
         endUpPeaceButton = new JButton("Peace");
         endUpPeaceButton.setPreferredSize(buttonSize);
 
+        JPanel infoPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
+
+        if (!isTourist) {
+            JLabel palyNameInformation = new JLabel("当前账号：", SwingConstants.CENTER); // Center text
+            palyNameInformation.setFont(new Font("宋体", Font.BOLD, 14)); // Optional: Make it look nicer
+
+            JLabel playName = new JLabel(playerName, SwingConstants.CENTER); // Center text
+            playName.setFont(new Font("宋体", Font.PLAIN, 14));
+
+            infoPanel.add(palyNameInformation);
+            infoPanel.add(playName);
+        }
+
         //==============================================================
         JPanel buttonPanel = new JPanel();
         //aujust grid rows based on the mode (2 row for tourist ,5 for user)
-        // 按钮内部布局 (buttonPanel)
-        // 依然使用 GridLayout 排列4个按钮，但这次只负责排列，不负责拉伸整个页面
-        int rows = isTourist ? 2 : 5;
-        buttonPanel.setLayout(new GridLayout(rows, 1,0, 20));
+        //int rows = isTourist ? 2 : 5;
+        buttonPanel.setLayout(new GridLayout(0, 1,0, 20));
         // row行1列，垂直间距20
         //key! only add buttons relevant to the user
 
@@ -115,18 +128,34 @@ public class GameFrame  extends JFrame {
         buttonPanel.add(giveUpButton);
 
         //侧边容器 (sidePanel)我们用一个新面板包裹 buttonPanel，防止它被 BorderLayout 拉伸
-        JPanel sidePanel =new JPanel();
+        JPanel sidePanel = new JPanel(new GridBagLayout());
         // 使用 GridBagLayout，它会让内部组件保持“首选大小”并在垂直方向居中
-        sidePanel.setLayout(new GridBagLayout());
-        sidePanel.add(buttonPanel);
-        // 将这个不拉伸的容器放到窗口右侧
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        // Add the Info Panel (Top)
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weighty = 0; // Do not take up extra vertical space
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(10, 0, 20, 0); // Add 30px gap below the text
+        sidePanel.add(infoPanel, gbc);
+
+        // Add the Button Panel (Bottom)
+        gbc.gridy = 1;
+        gbc.insets = new Insets(0, 0, 0, 0); // Reset insets
+        sidePanel.add(buttonPanel, gbc);
+
+        // 这个空组件占据了底部所有剩余空间，
+        // 有效地将信息和按钮推送到顶部。
+        gbc.gridy = 2;
+        gbc.weighty = 1.0;
+        sidePanel.add(new JLabel(), gbc);
         this.add(sidePanel, BorderLayout.EAST);
-        //==========================================================// 将这个不拉伸的容器放到窗口右侧
 
         // 自动调整窗口大小
         // pack() 会根据棋盘和按钮的实际大小，自动把窗口收缩到最小（紧贴边缘）
         this.pack();
-        this.setVisible(false); // 建议这里设为 true，或者在主程序里设
+        this.setVisible(false);
     }
 
 

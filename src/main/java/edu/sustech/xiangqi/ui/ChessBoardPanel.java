@@ -310,6 +310,7 @@ public class ChessBoardPanel extends JPanel {
             // Show persistent message (no timer to fade it)
             setStatusMessage(message + "被将军！", color, true);
             gameFrame.hideGiveUpOption(); // 确保认输按钮隐藏
+            gameFrame.getEndUpPeaceButton().setEnabled(false);
             this.setGameInteractionEnabled(false);
 
         } else if (inCheck) {
