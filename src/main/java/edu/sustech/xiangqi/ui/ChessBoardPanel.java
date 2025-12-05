@@ -16,10 +16,6 @@ import javax.swing.Timer;
 
 public class ChessBoardPanel extends JPanel {
     private ChessBoardModel model;
-
-    // 新增：定义一个全局的提示标签
-    private JLabel statusLabel;
-
     /**
      * 单个棋盘格子的尺寸（px）
      */
@@ -58,10 +54,6 @@ public class ChessBoardPanel extends JPanel {
         ));
         setBackground(new Color(220, 179, 92));
 
-
-        // 2. 初始化提示标签
-        initStatusLabel();
-
         addMouseListener(new MouseAdapter() {//鼠标点击获取坐标的核心逻辑
             @Override
             public void mouseClicked(MouseEvent e) {//获取MouseEvent对象的坐标
@@ -70,32 +62,17 @@ public class ChessBoardPanel extends JPanel {
         });
     }
 
-    //  新增：初始化标签的方法
-    private void initStatusLabel() {
-        statusLabel = new JLabel("请点击右侧“点击开始”", SwingConstants.CENTER); // 文字居中
-        statusLabel.setFont(new Font("楷体", Font.BOLD, 24)); // 字体大一点
-        statusLabel.setForeground(Color.RED); // 醒目的颜色
-
-        // 计算居中位置 (假设棋盘大概宽500-600)
-        // setBounds(x, y, width, height)
-        statusLabel.setBounds(100, 300, 400, 60);
-
-        statusLabel.setVisible(true); // 默认显示提示
-        this.add(statusLabel); //  把标签加到“自己”（this）上面
-    }
-
     //  修改：updateTurnLabel 方法，用于在切换回合时更新提示文字
-    private void updateTurnLabel() {
+    public void updateTurnLabel() {
         if (!interactionEnabled) return; // 如果游戏还没开始，不更新回合文字
 
         if (currentCamp.isRedTurn()) {
-            statusLabel.setText("当前回合：红方");
-            statusLabel.setForeground(Color.RED);
+
+            gameFrame.updateStatusMessage("当前回合：红方", Color.RED, true);
         } else {
-            statusLabel.setText("当前回合：黑方");
-            statusLabel.setForeground(Color.BLACK);
+
+            gameFrame.updateStatusMessage("当前回合：黑方", Color.BLACK, true);
         }
-        statusLabel.setVisible(true); // 确保文字显示
     }
     public ChessBoardModel model() {
         return model;
@@ -113,14 +90,11 @@ public class ChessBoardPanel extends JPanel {
             gameFrame.stopGameTimer();
             // 禁用时
             if (this.model.getMoveHistory().isEmpty()) {
-            statusLabel.setText("请点击开始");
-            statusLabel.setForeground(Color.RED);
-            statusLabel.setVisible(true);
+                gameFrame.updateStatusMessage("请点击开始", Color.BLUE, true);
         }else {
                 return;
             }
         }
-        // 重新绘制，确保 Label 刷新
         repaint();
     }
 
@@ -149,14 +123,6 @@ public class ChessBoardPanel extends JPanel {
                 if (piece.isRed() == currentCamp.isRedTurn()) {
                     selectedPiece = piece; // 选中成功
                     calculateLegalMoves(selectedPiece);
-                } else {
-                    statusLabel.setText("现在不是你的回合！");
-                    statusLabel.setForeground(Color.BLUE);
-                    statusLabel.setVisible(true);
-                    // 2. 设置一个计时器，1秒后隐藏文字，防止挡住棋子
-                    Timer timer = new Timer(1000, e -> statusLabel.setVisible(false));
-                    timer.setRepeats(false);
-                    timer.start();
                 }
             }
 
@@ -199,15 +165,13 @@ public class ChessBoardPanel extends JPanel {
                     // Check for self-check
                     boolean isSelfCheck = currentModel.isInCheck(currentCamp.isRedTurn());
                     if (isSelfCheck) {
-                        setStatusMessage("将导致将军！请重新选择！", Color.RED, false);
+                        gameFrame.updateStatusMessage("请重新选择！", Color.BLUE, false);
                         selectedPiece = null;
                         legalMoves.clear();
                         repaint();
                         return; // ABORT move
                     }
-                    // End of Self-Check Logic
 
-                    //记录吃子的情况先记录在移除
                     MoveEveryStep move = new MoveEveryStep(selectedPiece, row, col, target, this.currentCamp);
                     model.recordMove(move);
                     //这是记录棋子的吃子情况
@@ -236,7 +200,7 @@ public class ChessBoardPanel extends JPanel {
 
                     boolean isSelfCheck = currentModel.isInCheck(currentCamp.isRedTurn());
                     if (isSelfCheck) {
-                        setStatusMessage("将导致将军！请重新选择！", Color.RED, false);
+                        gameFrame.updateStatusMessage("请重新选择！", Color.BLUE, false);
                         selectedPiece = null;
                         legalMoves.clear();
                         repaint();
@@ -269,13 +233,13 @@ public class ChessBoardPanel extends JPanel {
                 if (isRedTurn) {
                     isCheck = model.isInCheck(false); // 红方走后检测黑方
                     if (isCheck) {
-                        setStatusMessage("红方将黑方", Color.BLACK,  true);
+                        gameFrame.updateStatusMessage("红方将黑方", Color.RED, true);
                         messageShown = true;
                     }
                 } else {
                     isCheck = model.isInCheck(true); // 黑方走后检测红方
                     if (isCheck) {
-                        setStatusMessage("黑方将红方", Color.RED, true);
+                        gameFrame.updateStatusMessage("黑方将红方", Color.BLACK, true);
                         messageShown = true;
                     }
                 }
@@ -298,11 +262,12 @@ public class ChessBoardPanel extends JPanel {
         String currentCampName = currentCamp.isRedTurn() ? "红方" : "黑方";
         if (!hasMoves) {
             String message;
-            Color color = Color.GREEN;
+            Color color = Color.BLUE;
             if (inCheck) {
                 // Checkmate: The previous player wins
                 String winner = currentCamp.isRedTurn() ? "黑方" : "红方";
-                message = winner + "胜利！（将军且无路可走）";
+                String loser = currentCamp.isRedTurn() ? "红方" : "黑方";
+                message = winner + "将死" + loser;
                 if (currentCamp.isRedTurn()) {
                     gameFrame.addBlackCampScore();
                     gameFrame.updateScoreLabel();
@@ -314,19 +279,19 @@ public class ChessBoardPanel extends JPanel {
                 }
             } else {
                 // Stalemate: Draw
-                message = "和局！（无路可走但未被将军）";
+                message = "和局！";
                 color = Color.BLUE;
             }
 
             // Show persistent message (no timer to fade it)
-            setStatusMessage(message + "被将军！", color, true);
+            gameFrame.updateStatusMessage(message, Color.RED, true);
             gameFrame.hideGiveUpOption(); // 确保认输按钮隐藏
             gameFrame.getEndUpPeaceButton().setEnabled(false);
             this.setGameInteractionEnabled(false);
 
         } else if (inCheck) {
             Color checkColor = currentCamp.isRedTurn() ? Color.RED : Color.BLACK;
-            setStatusMessage(currentCampName + "被将军！", checkColor, true);
+            gameFrame.updateStatusMessage(currentCampName + "被将军！", Color.RED, true);
             gameFrame.showGiveUpOption(currentCampName);
         } else {
             updateTurnLabel(); // 更新回合文字
@@ -476,31 +441,6 @@ public class ChessBoardPanel extends JPanel {
         this.selectedPiece = null; // Clear any selected piece
         this.repaint();
     }
-
-    //全局的文字 method
-    public void setStatusMessage(String statusMessage, Color color,boolean isPermanent) {
-        statusLabel.setText(statusMessage);
-        statusLabel.setForeground(color);
-        statusLabel.setVisible(true);
-
-        if (!isPermanent) {
-        Timer timer = new Timer(1500, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // After the message fades, restore the turn display
-                if (interactionEnabled) {
-                    updateTurnLabel();
-                } else {
-                    statusLabel.setVisible(false);
-                }
-                ((Timer) e.getSource()).stop();
-            }
-        });
-        timer.setRepeats(false);
-        timer.start();
-        }
-    }
-
     public boolean getInteractionEnabled() {
         return interactionEnabled;
     }

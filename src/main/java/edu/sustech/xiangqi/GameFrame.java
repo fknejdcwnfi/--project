@@ -5,6 +5,9 @@ import edu.sustech.xiangqi.ui.ChessBoardPanel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.net.URL;
 
 public class GameFrame extends JFrame {
 
@@ -26,6 +29,7 @@ public class GameFrame extends JFrame {
     // UI Components - Labels
     private JLabel timerLabel;
     private JLabel campGoalLabel;
+    private JLabel statusLabel;
 
     // Data
     private boolean isTourist;
@@ -34,8 +38,58 @@ public class GameFrame extends JFrame {
     private int blackCampScore;
 
     // CONSTANTS
-    private static final int SIDE_PANEL_WIDTH = 300; // Width for Left and Right panels to ensure symmetry
+    private static final int SIDE_PANEL_WIDTH = 350; // Width for Left and Right panels to ensure symmetry
     private static final Dimension BUTTON_SIZE = new Dimension(140, 45);
+
+
+    static class BackgroundPanelLeft extends JPanel {
+        private Image backgroundImage;
+        public BackgroundPanelLeft() {
+            // 加载背景图（路径根据实际情况调整）
+            URL imgUrl = getClass().getResource("/Picture/gameframe框架左边图片.png");
+            if (imgUrl != null) {
+                backgroundImage = new ImageIcon(imgUrl).getImage();
+            } else {
+                System.out.println("背景图路径错误！");
+            }
+            setLayout(new GridBagLayout()); // Using GridBagLayout to center content
+            setPreferredSize(new Dimension(SIDE_PANEL_WIDTH, 0)); // Use the constant
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            if (backgroundImage != null) {
+                g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+            }
+        }
+    }
+
+
+    // 内部类：带背景的面板
+    static class BackgroundPanelRight extends JPanel {
+        private Image backgroundImage;
+        public BackgroundPanelRight() {
+            // 加载背景图（路径根据实际情况调整）
+            URL imgUrl = getClass().getResource("/Picture/gameframe框架右边图片.png");
+            if (imgUrl != null) {
+                backgroundImage = new ImageIcon(imgUrl).getImage();
+            } else {
+                System.out.println("背景图路径错误！");
+            }
+            setLayout(new GridBagLayout()); // Using GridBagLayout to center content
+            setPreferredSize(new Dimension(SIDE_PANEL_WIDTH, 0)); // Use the constant
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            if (backgroundImage != null) {
+                g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+            }
+        }
+    }
+
 
     public GameFrame(String playerName) {
         super("中国象棋");
@@ -55,9 +109,6 @@ public class GameFrame extends JFrame {
 
         this.boardPanel = new ChessBoardPanel(model, currentCamp, this);
         model.setView(this.boardPanel);
-        // Sync button state with board interaction
-        boolean isGameRunning = !Startbutton.isEnabled();
-        this.boardPanel.setGameInteractionEnabled(isGameRunning);
 
         this.add(boardPanel, BorderLayout.CENTER);
 
@@ -68,6 +119,9 @@ public class GameFrame extends JFrame {
         // ==================== 4. Right Panel: Buttons ====================
         JPanel rightPanel = createRightPanel();
         this.add(rightPanel, BorderLayout.EAST);
+
+        boolean isGameRunning = !Startbutton.isEnabled();
+        this.boardPanel.setGameInteractionEnabled(isGameRunning);
 
         // ==================== 5. Finalize Window ====================
         this.pack(); // Adjusts window size based on components
@@ -119,24 +173,34 @@ public class GameFrame extends JFrame {
      * Creates the Left Panel containing Text, Timer, and Score
      */
     private JPanel createLeftPanel() {
-        JPanel leftPanel = new JPanel();
-        leftPanel.setPreferredSize(new Dimension(SIDE_PANEL_WIDTH, 0)); // Set fixed width
-        leftPanel.setLayout(new GridBagLayout()); // Centered vertically
+        JPanel leftPanel = new BackgroundPanelLeft();
+        //leftPanel.setPreferredSize(new Dimension(SIDE_PANEL_WIDTH, 0)); // Set fixed width
+        //leftPanel.setLayout(new GridBagLayout()); // Centered vertically
         // Optional: Set background to see the "space"
         // leftPanel.setBackground(Color.WHITE);
 
         JPanel contentContainer = new JPanel();
         contentContainer.setLayout(new BoxLayout(contentContainer, BoxLayout.Y_AXIS));
+        contentContainer.setOpaque(false);
         // contentContainer.setBackground(Color.WHITE);
+
+        // ======= STATUS LABEL (TOP) =======
+        statusLabel = new JLabel("欢迎进入中国象棋", SwingConstants.CENTER);
+        statusLabel.setFont(new Font("楷体", Font.BOLD, 22));
+        statusLabel.setForeground(Color.RED);
+        statusLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        contentContainer.add(statusLabel);
+
+        contentContainer.add(Box.createVerticalStrut(30)); // spacing
 
         // 1. Player Info
         if (!isTourist) {
             JLabel infoTitle = new JLabel("当前账号：");
-            infoTitle.setFont(new Font("宋体", Font.BOLD, 16));
+            infoTitle.setFont(new Font("华文行楷", Font.BOLD, 16));
             infoTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
 
             JLabel nameLabel = new JLabel(playerName);
-            nameLabel.setFont(new Font("宋体", Font.PLAIN, 16));
+            nameLabel.setFont(new Font("华文行楷", Font.PLAIN, 16));
             nameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
             contentContainer.add(infoTitle);
@@ -177,13 +241,14 @@ public class GameFrame extends JFrame {
      * Creates the Right Panel containing all Buttons
      */
     private JPanel createRightPanel() {
-        JPanel rightPanel = new JPanel();
-        rightPanel.setPreferredSize(new Dimension(SIDE_PANEL_WIDTH, 0)); // Same fixed width as left
-        rightPanel.setLayout(new GridBagLayout()); // Center the button stack vertically
+        JPanel rightPanel = new BackgroundPanelRight();
+        //rightPanel.setPreferredSize(new Dimension(SIDE_PANEL_WIDTH, 0)); // Same fixed width as left
+        //rightPanel.setLayout(new GridBagLayout()); // Center the button stack vertically
 
         JPanel buttonContainer = new JPanel();
         // Use GridLayout for uniform button sizes and spacing
         buttonContainer.setLayout(new GridLayout(0, 1, 0, 15));
+        buttonContainer.setOpaque(false);
 
         // Initialize Buttons
         Startbutton.setPreferredSize(BUTTON_SIZE);
@@ -315,5 +380,28 @@ public class GameFrame extends JFrame {
 
         this.campGoalLabel.setText(goalText);
         this.campGoalLabel.repaint();
+    }
+
+    public void updateStatusMessage(String message, Color color, boolean persistent) {
+        statusLabel.setText(message);
+        statusLabel.setForeground(color);
+        statusLabel.setVisible(true);
+        statusLabel.setFont(new Font("华文行楷", Font.BOLD, 24));
+
+        if (!persistent) {
+        Timer timer = new Timer(1500, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (boardPanel.getInteractionEnabled()) {
+                    boardPanel.updateTurnLabel();
+                } else {
+                    statusLabel.setVisible(false);
+                }
+                ((Timer) e.getSource()).stop();
+            }
+        });
+        timer.setRepeats(false);
+        timer.start();
+        }
     }
 }

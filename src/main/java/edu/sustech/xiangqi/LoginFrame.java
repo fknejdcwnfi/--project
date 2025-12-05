@@ -252,6 +252,7 @@ public class LoginFrame extends JFrame{
             gameFrame.getStartbutton().setEnabled(true);
             gameFrame.getStartbutton().setText("点击开始");
             gameFrame.getBoardPanel().setGameInteractionEnabled(false);
+            gameFrame.getEndUpPeaceButton().setEnabled(true);
             gameFrame.repaint(); // Force GameFrame to redraw everything
         });
 
@@ -289,10 +290,10 @@ public class LoginFrame extends JFrame{
             ChessBoardPanel boardPanel = gameFrame.getBoardPanel();
 
             if (model.getMoveHistory().isEmpty()) {
-                boardPanel.setStatusMessage("无法悔棋", Color.RED, false);
+                gameFrame.updateStatusMessage("无法悔棋", Color.RED, false);
                 return;
             }
-            if (model.getMoveHistory().isEmpty() == false && gameFrame.getBoardPanel().getInteractionEnabled() == false) {
+            if (model.getMoveHistory().isEmpty() == false && gameFrame.getBoardPanel().getInteractionEnabled() == false && gameFrame.getEndUpPeaceButton().isEnabled() == true) {
                 if (currentCamp.isRedTurn()) {
                     gameFrame.removeBlackCampScore();
                     gameFrame.updateScoreLabel();
@@ -306,13 +307,17 @@ public class LoginFrame extends JFrame{
                 currentCamp.returnTurn();
                 boardPanel.setNewGameModel(model, currentCamp);
                 gameFrame.getBoardPanel().setGameInteractionEnabled(true);
-                boardPanel.setStatusMessage("悔棋成功！", Color.BLUE,  false);
+                gameFrame.updateStatusMessage("悔棋成功！", Color.BLUE, false);
                 gameFrame.repaint();
             } else {
             model.removeLastMove();
             currentCamp.returnTurn();
             boardPanel.setNewGameModel(model, currentCamp);
-            boardPanel.setStatusMessage("悔棋成功！", Color.BLUE,   false);
+            if (!gameFrame.getEndUpPeaceButton().isEnabled()) {
+                    gameFrame.getEndUpPeaceButton().setEnabled(true);
+                    gameFrame.getBoardPanel().setGameInteractionEnabled(true);
+            }
+            gameFrame.updateStatusMessage("悔棋成功！", Color.BLUE, false);
             gameFrame.repaint();
             }
             gameFrame.getActiveSession().setPlayingTime(gameFrame.getTimerLabel());
@@ -363,7 +368,7 @@ public class LoginFrame extends JFrame{
                     gameFrame.addRedCampScore();
                 }
                 gameFrame.updateScoreLabel();
-                gameFrame.getBoardPanel().setStatusMessage(winner + "胜利！（" + loser + "认输）", Color.GREEN, true);
+                gameFrame.updateStatusMessage(winner + "胜利！（" + loser + "认输）", Color.BLUE, true);
                 gameFrame.hideGiveUpOption();
                 gameFrame.getEndUpPeaceButton().setEnabled(false);
                 gameFrame.getBoardPanel().setGameInteractionEnabled(false);
@@ -380,12 +385,13 @@ public class LoginFrame extends JFrame{
         gameFrame.getEndUpPeaceButton().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (!gameFrame.getActiveSession().getChessBoardModel().getMoveHistory().isEmpty()) {
-                gameFrame.getBoardPanel().setStatusMessage("双方和棋！", Color.GREEN, true);
+                    gameFrame.updateStatusMessage("双方和棋！", Color.BLUE, true);
+                //gameFrame.getBoardPanel().setStatusMessage("双方和棋！", Color.GREEN, true);
                 gameFrame.hideGiveUpOption();
                 gameFrame.getBoardPanel().setGameInteractionEnabled(false);
                 gameFrame.stopGameTimer();
                 gameFrame.updateScoreLabel();
-                gameFrame.getTakeBackAMove().setEnabled(false);
+                gameFrame.getEndUpPeaceButton().setEnabled(false);
                 gameFrame.getActiveSession().setPlayingTime(gameFrame.getTimerLabel());
                 gameFrame.getActiveSession().setSecondsElapsed(gameFrame.getSecondsElapsed());
                 gameFrame.getActiveSession().setRedCampScore(gameFrame.getRedCampScore());
