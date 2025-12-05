@@ -174,10 +174,6 @@ public class GameFrame extends JFrame {
      */
     private JPanel createLeftPanel() {
         JPanel leftPanel = new BackgroundPanelLeft();
-        //leftPanel.setPreferredSize(new Dimension(SIDE_PANEL_WIDTH, 0)); // Set fixed width
-        //leftPanel.setLayout(new GridBagLayout()); // Centered vertically
-        // Optional: Set background to see the "space"
-        // leftPanel.setBackground(Color.WHITE);
 
         JPanel contentContainer = new JPanel();
         contentContainer.setLayout(new BoxLayout(contentContainer, BoxLayout.Y_AXIS));
@@ -242,8 +238,6 @@ public class GameFrame extends JFrame {
      */
     private JPanel createRightPanel() {
         JPanel rightPanel = new BackgroundPanelRight();
-        //rightPanel.setPreferredSize(new Dimension(SIDE_PANEL_WIDTH, 0)); // Same fixed width as left
-        //rightPanel.setLayout(new GridBagLayout()); // Center the button stack vertically
 
         JPanel buttonContainer = new JPanel();
         // Use GridLayout for uniform button sizes and spacing

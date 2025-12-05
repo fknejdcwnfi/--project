@@ -317,7 +317,12 @@ public class ChessBoardPanel extends JPanel {
      */
     private void drawBoard(Graphics2D g) {
         g.setColor(Color.BLACK);
-        g.setStroke(new BasicStroke(2));
+        // 使用较粗的线条绘制主棋盘线
+        g.setStroke(new BasicStroke(3));
+
+        // --- L 形标记常量 ---
+        final int MARK_LENGTH = 12; // L 形标记单边长度
+        final int MARK_GAP = 8;     // **L 形标记内角与棋盘交点的间隙增大 (原 MARK_OFFSET = 3)**
 
         // 绘制横线
         for (int i = 0; i < ChessBoardModel.getRows(); i++) {
@@ -338,32 +343,95 @@ public class ChessBoardPanel extends JPanel {
             }
         }
 
-        //画两个x线用于将和帅
+        //画两个x线用于将和帅 (保持不变)
         g.drawLine(MARGIN  + 3 * CELL_SIZE, MARGIN, MARGIN + 5 * CELL_SIZE, MARGIN + 2 * CELL_SIZE);
         g.drawLine(MARGIN  + 5 * CELL_SIZE, MARGIN, MARGIN + 3 * CELL_SIZE, MARGIN + 2 * CELL_SIZE);
         g.drawLine(MARGIN  + 3 * CELL_SIZE, MARGIN + 9 * CELL_SIZE, MARGIN + 5 * CELL_SIZE, MARGIN + 7 * CELL_SIZE);
         g.drawLine(MARGIN  + 3 * CELL_SIZE, MARGIN + 7 * CELL_SIZE, MARGIN + 5 * CELL_SIZE, MARGIN + 9 * CELL_SIZE);
 
-        // 绘制“楚河”和“汉界”这两个文字
+
+        // --- 绘制炮位和兵卒位的 L 形标记 ---
+        g.setStroke(new BasicStroke(3));
+
+        // 标记点 (行, 列)
+        int[][] marks = {
+                // 炮位：(2, 1), (2, 7), (7, 1), (7, 7)
+                {2, 1}, {2, 7}, {7, 1}, {7, 7},
+                // 兵卒位：(3, 0), (3, 2), (3, 4), (3, 6), (3, 8)
+                {3, 0}, {3, 2}, {3, 4}, {3, 6}, {3, 8},
+                // 兵卒位：(6, 0), (6, 2), (6, 4), (6, 6), (6, 8)
+                {6, 0}, {6, 2}, {6, 4}, {6, 6}, {6, 8}
+        };
+
+        for (int[] mark : marks) {
+            int r = mark[0];
+            int c = mark[1];
+            int x = MARGIN + c * CELL_SIZE; // 棋盘交点 X 坐标
+            int y = MARGIN + r * CELL_SIZE; // 棋盘交点 Y 坐标
+
+            // 特殊处理：0列和8列的兵卒标记只有内侧两个L
+            boolean isEdge = (c == 0 || c == ChessBoardModel.getCols() - 1);
+
+            // 绘制 L 形标记的四个角（四个 90° 角）
+
+            // 1. 左上角 L
+            if (!isEdge || c != 0) {
+                // 绘制的内角点位于 (x - MARK_GAP, y - MARK_GAP) 处
+                // 横线 (向左延伸)
+                g.drawLine(x - MARK_GAP, y - MARK_GAP, x - MARK_GAP - MARK_LENGTH, y - MARK_GAP);
+                // 竖线 (向上延伸)
+                g.drawLine(x - MARK_GAP, y - MARK_GAP, x - MARK_GAP, y - MARK_GAP - MARK_LENGTH);
+            }
+
+            // 2. 右上角 L
+            if (!isEdge || c != ChessBoardModel.getCols() - 1) {
+                // 绘制的内角点位于 (x + MARK_GAP, y - MARK_GAP) 处
+                // 横线 (向右延伸)
+                g.drawLine(x + MARK_GAP, y - MARK_GAP, x + MARK_GAP + MARK_LENGTH, y - MARK_GAP);
+                // 竖线 (向上延伸)
+                g.drawLine(x + MARK_GAP, y - MARK_GAP, x + MARK_GAP, y - MARK_GAP - MARK_LENGTH);
+            }
+
+            // 3. 左下角 L
+            if (!isEdge || c != 0) {
+                // 绘制的内角点位于 (x - MARK_GAP, y + MARK_GAP) 处
+                // 横线 (向左延伸)
+                g.drawLine(x - MARK_GAP, y + MARK_GAP, x - MARK_GAP - MARK_LENGTH, y + MARK_GAP);
+                // 竖线 (向下延伸)
+                g.drawLine(x - MARK_GAP, y + MARK_GAP, x - MARK_GAP, y + MARK_GAP + MARK_LENGTH);
+            }
+
+            // 4. 右下角 L
+            if (!isEdge || c != ChessBoardModel.getCols() - 1) {
+                // 绘制的内角点位于 (x + MARK_GAP, y + MARK_GAP) 处
+                // 横线 (向右延伸)
+                g.drawLine(x + MARK_GAP, y + MARK_GAP, x + MARK_GAP + MARK_LENGTH, y + MARK_GAP);
+                // 竖线 (向下延伸)
+                g.drawLine(x + MARK_GAP, y + MARK_GAP, x + MARK_GAP, y + MARK_GAP + MARK_LENGTH);
+            }
+        }
+
+        // --- 绘制“楚河”和“汉界”这两个文字 (保持不变) ---
         g.setColor(Color.BLACK);
-        g.setFont(new Font("楷体", Font.BOLD, 24));
+        g.setFont(new Font("宋体", Font.BOLD, 30));
 
         int riverY = MARGIN + 4 * CELL_SIZE + CELL_SIZE / 2;
 
         String chuHeText = "楚河";
         FontMetrics fm = g.getFontMetrics();
         int chuHeWidth = fm.stringWidth(chuHeText);
-        g.drawString(chuHeText, MARGIN + CELL_SIZE * 2 - chuHeWidth / 2, riverY + 8);
+        g.drawString(chuHeText, MARGIN + CELL_SIZE * 2 - chuHeWidth / 2, riverY + 10);
 
         String hanJieText = "汉界";
         int hanJieWidth = fm.stringWidth(hanJieText);
-        g.drawString(hanJieText, MARGIN + CELL_SIZE * 6 - hanJieWidth / 2, riverY + 8);
+        g.drawString(hanJieText, MARGIN + CELL_SIZE * 6 - hanJieWidth / 2, riverY + 10);
     }
 
     /**
      * 绘制棋子
      */
     private void drawPieces(Graphics2D g) {
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         // 遍历棋盘上的每一个棋子，每次循环绘制该棋子
         for (AbstractPiece piece : model.getPieces()) {
             // 计算每一个棋子的坐标
@@ -377,7 +445,7 @@ public class ChessBoardPanel extends JPanel {
             g.fillOval(x - PIECE_RADIUS, y - PIECE_RADIUS, PIECE_RADIUS * 2, PIECE_RADIUS * 2);
             // 绘制circle的黑色边框
             g.setColor(Color.BLACK);
-            g.setStroke(new BasicStroke(2));
+            g.setStroke(new BasicStroke(3));
             g.drawOval(x - PIECE_RADIUS, y - PIECE_RADIUS, PIECE_RADIUS * 2, PIECE_RADIUS * 2);
 
             if (isSelected) {
@@ -390,7 +458,7 @@ public class ChessBoardPanel extends JPanel {
             } else {
                 g.setColor(Color.BLACK);
             }
-            g.setFont(new Font("楷体", Font.BOLD, 22));
+            g.setFont(new Font("宋体", Font.BOLD, 28));
             FontMetrics fm = g.getFontMetrics();
             int textWidth = fm.stringWidth(piece.getName());
             int textHeight = fm.getAscent();
@@ -402,37 +470,13 @@ public class ChessBoardPanel extends JPanel {
      * 绘制选中棋子时的蓝色外边框效果
      */
     private void drawCornerBorders(Graphics2D g, int centerX, int centerY) {
-        g.setColor(new Color(0, 100, 255));
-        g.setStroke(new BasicStroke(3));
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setColor(new Color(255, 215, 0));
+        g.setStroke(new BasicStroke(4));
 
-        int cornerSize = 32;
-        int lineLength = 12;
-
-        // 选中效果的边框实际上是8条line，每两个line组成一个角落的边框
-
-        // 左上角的边框
-        g.drawLine(centerX - cornerSize, centerY - cornerSize,
-                centerX - cornerSize + lineLength, centerY - cornerSize);
-        g.drawLine(centerX - cornerSize, centerY - cornerSize,
-                centerX - cornerSize, centerY - cornerSize + lineLength);
-
-        // 右上角的边框
-        g.drawLine(centerX + cornerSize, centerY - cornerSize,
-                centerX + cornerSize - lineLength, centerY - cornerSize);
-        g.drawLine(centerX + cornerSize, centerY - cornerSize,
-                centerX + cornerSize, centerY - cornerSize + lineLength);
-
-        // 左下角的边框
-        g.drawLine(centerX - cornerSize, centerY + cornerSize,
-                centerX - cornerSize + lineLength, centerY + cornerSize);
-        g.drawLine(centerX - cornerSize, centerY + cornerSize,
-                centerX - cornerSize, centerY + cornerSize - lineLength);
-
-        // 右下角的边框
-        g.drawLine(centerX + cornerSize, centerY + cornerSize,
-                centerX + cornerSize - lineLength, centerY + cornerSize);
-        g.drawLine(centerX + cornerSize, centerY + cornerSize,
-                centerX + cornerSize, centerY + cornerSize - lineLength);
+        int highlightRadius = PIECE_RADIUS + 3;
+        g.drawOval(centerX - highlightRadius, centerY - highlightRadius,
+                highlightRadius * 2, highlightRadius * 2);
     }
 
     public void setNewGameModel(ChessBoardModel newModel, CurrentCamp newCamp) {//重新为棋盘赋值（重新开始游戏）
@@ -468,33 +512,104 @@ public class ChessBoardPanel extends JPanel {
         System.out.println("合法位置数量：" + legalMoves.size());
     }
 
+
     private void drawLegalMoves(Graphics g) {
-        // 未选中棋子或无合法位置，直接返回
+// 未选中棋子或无合法位置，直接返回
         if (selectedPiece == null || legalMoves.isEmpty()) {
             return;
         }
 
-        // 设置红圈样式：红色、细边框（避免太粗）
-        g.setColor(new Color(255, 60, 60));
-        ((Graphics2D) g).setStroke(new BasicStroke(2)); // 细一点的线
+        Graphics2D g2d = (Graphics2D) g;
+        // 确保抗锯齿开启，获得平滑边缘
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        // 遍历合法位置绘制红圈
+        // --- 移动点常量保持不变 ---
+        final int MOVE_DOT_RADIUS = PIECE_RADIUS / 3;
+        final Color MOVE_COLOR = new Color(50, 180, 255, 220);
+        final int MOVE_RING_THICKNESS = 2;
+
+        // --- 瞄准镜常量更新：线段更突出圆环 ---
+        // 将偏移量增大，让线段更突出圆环
+        final int SCOPE_OFFSET = PIECE_RADIUS + 15;         // 线段起点到中心距离增大 (原为 +10)
+        final int SCOPE_RING_RADIUS = PIECE_RADIUS + 9;    // 瞄准环的半径保持不变
+        final int SCOPE_LINE_LENGTH = 10;
+        final int SCOPE_THICKNESS = 3;
+        final Color CAPTURE_COLOR = new Color(255, 50, 50);  // 鲜艳的亮红色
+
+        // 遍历合法位置绘制标记
         for (Point p : legalMoves) {
             int row = p.x; // 行坐标（对应y轴）
             int col = p.y; // 列坐标（对应x轴）
 
-            // 计算红圈中心点坐标（格子的正中心）
-            int centerX = MARGIN + col * CELL_SIZE;//change
-            int centerY = MARGIN + row * CELL_SIZE;//change
+            // 计算中心点坐标
+            int centerX = MARGIN + col * CELL_SIZE;
+            int centerY = MARGIN + row * CELL_SIZE;
 
-            // 绘制红圈：半径为格子的1/4，避免太大
-            int radius = PIECE_RADIUS / 3;
-            g.fillOval(
-                    centerX - radius,  // 左上角x
-                    centerY - radius,  // 左上角y
-                    radius * 2,        // 宽
-                    radius * 2         // 高
-            );
+            AbstractPiece targetPiece = model.getPieceAt(row, col);
+
+            if (targetPiece == null) {
+                // --- 目标为空地：绘制醒目的实心圆点 + 外环 (保持不变) ---
+
+                // 1. 绘制内部填充圆
+                g2d.setColor(MOVE_COLOR);
+                g2d.fillOval(
+                        centerX - MOVE_DOT_RADIUS,
+                        centerY - MOVE_DOT_RADIUS,
+                        MOVE_DOT_RADIUS * 2,
+                        MOVE_DOT_RADIUS * 2
+                );
+
+                // 2. 绘制外部白色细环，增强可见度
+                g2d.setColor(Color.WHITE);
+                g2d.setStroke(new BasicStroke(MOVE_RING_THICKNESS));
+                g2d.drawOval(
+                        centerX - MOVE_DOT_RADIUS,
+                        centerY - MOVE_DOT_RADIUS,
+                        MOVE_DOT_RADIUS * 2,
+                        MOVE_DOT_RADIUS * 2
+                );
+
+            } else {
+                // --- 目标为敌方棋子：绘制瞄准目标图标 ---
+                g2d.setColor(CAPTURE_COLOR);
+
+                // 1. 绘制外围圆环
+                g2d.setStroke(new BasicStroke(SCOPE_THICKNESS));
+                g2d.drawOval(
+                        centerX - SCOPE_RING_RADIUS,
+                        centerY - SCOPE_RING_RADIUS,
+                        SCOPE_RING_RADIUS * 2,
+                        SCOPE_RING_RADIUS * 2
+                );
+
+                // 2. 绘制水平和垂直的瞄准线（现在会更突出圆环）
+
+                // 左侧水平线
+                // 起点: centerX - SCOPE_OFFSET
+                // 终点: 起点 + SCOPE_LINE_LENGTH
+                g2d.drawLine(centerX - SCOPE_OFFSET, centerY,
+                        centerX - SCOPE_OFFSET + SCOPE_LINE_LENGTH, centerY);
+
+                // 右侧水平线
+                // 起点: centerX + SCOPE_OFFSET
+                // 终点: 起点 - SCOPE_LINE_LENGTH
+                g2d.drawLine(centerX + SCOPE_OFFSET, centerY,
+                        centerX + SCOPE_OFFSET - SCOPE_LINE_LENGTH, centerY);
+
+                // 上侧垂直线
+                g2d.drawLine(centerX, centerY - SCOPE_OFFSET,
+                        centerX, centerY - SCOPE_OFFSET + SCOPE_LINE_LENGTH);
+                // 下侧垂直线
+                g2d.drawLine(centerX, centerY + SCOPE_OFFSET,
+                        centerX, centerY + SCOPE_OFFSET - SCOPE_LINE_LENGTH);
+
+                // 恢复默认的细线
+                g2d.setStroke(new BasicStroke(1));
+            }
         }
+
+        // 关闭抗锯齿
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
     }
 }
+
