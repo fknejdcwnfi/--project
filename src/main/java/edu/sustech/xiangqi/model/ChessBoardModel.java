@@ -240,6 +240,7 @@ public class ChessBoardModel implements Serializable {
         return copy;
     }
 
+    //if the player whose turn it is (indicated by isRed) has any legal moves available on the current chessboard.
     public boolean hasLegalMoves(boolean isRed) {
         for (AbstractPiece piece : pieces) {
             if (piece.isRed() != isRed) continue; // Skip opponent's pieces

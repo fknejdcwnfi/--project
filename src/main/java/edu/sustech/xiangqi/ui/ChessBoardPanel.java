@@ -1,5 +1,4 @@
 package edu.sustech.xiangqi.ui;
-
 import edu.sustech.xiangqi.CurrentCamp;
 import edu.sustech.xiangqi.GameFrame;
 import edu.sustech.xiangqi.MoveEveryStep;
@@ -10,7 +9,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
-import javax.swing.Timer;
+
 
 
 
@@ -38,6 +37,8 @@ public class ChessBoardPanel extends JPanel {
     private CurrentCamp currentCamp;
 
     private MoveEveryStep lastMove = null;
+
+    private boolean isGameOver=false;
 
     //调用那个检测下一步的红圈标记方法。
     private java.util.List<Point> legalMoves = new ArrayList<>();
@@ -82,6 +83,19 @@ public class ChessBoardPanel extends JPanel {
 
     //=====================================================================
     public void setGameInteractionEnabled(boolean enabled) {
+
+        String bgmPath="src/main/resources/Audio/"+"斗地主.wav";
+        if (isGameOver) {
+            return;
+        }
+        if (enabled) {
+            // 启动循环音效（单例防止叠加）
+            AudioPlayer.playLoopingSound(bgmPath);
+        } else {
+            // 关闭交互时，停止循环音效
+            //AudioPlayer.stopLoopingSound(bgmPath);
+        }
+
         this.interactionEnabled = enabled; // 使用 this
 
         if (interactionEnabled) {
@@ -175,6 +189,7 @@ public class ChessBoardPanel extends JPanel {
                     }
 
                     MoveEveryStep move = new MoveEveryStep(selectedPiece, row, col, target, this.currentCamp);
+                    AudioPlayer.playSound("src/main/resources/Audio/吃.wav");
                     model.recordMove(move);
                     //这是记录棋子的吃子情况
 
@@ -235,12 +250,14 @@ public class ChessBoardPanel extends JPanel {
                 if (isRedTurn) {
                     isCheck = model.isInCheck(false); // 红方走后检测黑方
                     if (isCheck) {
+                        AudioPlayer.playSound("src/main/resources/Audio/将军.wav");
                         gameFrame.updateStatusMessage("红方将黑方", Color.RED, true);
                         messageShown = true;
                     }
                 } else {
                     isCheck = model.isInCheck(true); // 黑方走后检测红方
                     if (isCheck) {
+                        AudioPlayer.playSound("src/main/resources/Audio/将军.wav");
                         gameFrame.updateStatusMessage("黑方将红方", Color.BLACK, true);
                         messageShown = true;
                     }
@@ -264,27 +281,52 @@ public class ChessBoardPanel extends JPanel {
         boolean inCheck = model.isInCheck(currentCamp.isRedTurn());
         boolean hasMoves = model.hasLegalMoves(currentCamp.isRedTurn());
         String currentCampName = currentCamp.isRedTurn() ? "红方" : "黑方";
+        //haslegalmoves is to the piece which the currentcamp do not move a piece but it actually has no movement(simulate the move but actually do not happen!)
+        //isincheck(is the situation now the camp face to!) is that the currnet camp in last step of the conpent is going to be eaten the general, then it start to find if
+        // it has legal moves to break the situation
         if (!hasMoves) {
             String message;
             Color color = Color.BLUE;
             if (inCheck) {
                 // Checkmate: The previous player wins
+                isGameOver=true;
+                AudioPlayer.stopAllLoopingSounds();
+                setGameInteractionEnabled(false);
                 String winner = currentCamp.isRedTurn() ? "黑方" : "红方";
                 String loser = currentCamp.isRedTurn() ? "红方" : "黑方";
                 message = winner + "将死" + loser;
                 if (currentCamp.isRedTurn()) {
+                    AudioPlayer.playSound("src/main/resources/Audio/绝杀.wav");
                     gameFrame.addBlackCampScore();
                     gameFrame.updateScoreLabel();
                     repaint();
                 } else  {
+                    AudioPlayer.playSound("src/main/resources/Audio/绝杀.wav");
                     gameFrame.addRedCampScore();
                     gameFrame.updateScoreLabel();
                     repaint();
                 }
             } else {
                 // Stalemate: Draw
-                message = "和局！";
-                color = Color.BLUE;
+
+                isGameOver=true;
+                AudioPlayer.stopAllLoopingSounds();
+                setGameInteractionEnabled(false);
+
+                String winner = currentCamp.isRedTurn() ? "黑方" : "红方";
+                String loser = currentCamp.isRedTurn() ? "红方" : "黑方";
+                message ="困毙：" +  winner + "胜利";
+                if (currentCamp.isRedTurn()) {
+                    AudioPlayer.playSound("src/main/resources/Audio/绝杀.wav");
+                    gameFrame.addBlackCampScore();
+                    gameFrame.updateScoreLabel();
+                    repaint();
+                } else  {
+                    AudioPlayer.playSound("src/main/resources/Audio/绝杀.wav");
+                    gameFrame.addRedCampScore();
+                    gameFrame.updateScoreLabel();
+                    repaint();
+                }
             }
 
             // Show persistent message (no timer to fade it)

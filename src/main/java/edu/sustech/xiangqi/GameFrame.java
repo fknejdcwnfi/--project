@@ -1,6 +1,7 @@
 package edu.sustech.xiangqi;
 import edu.sustech.xiangqi.ui.AncientButton;
 import edu.sustech.xiangqi.model.ChessBoardModel;
+import edu.sustech.xiangqi.ui.AudioPlayer;
 import edu.sustech.xiangqi.ui.ChessBoardPanel;
 
 import javax.swing.*;
@@ -266,6 +267,14 @@ public class GameFrame extends JFrame {
 
         endUpPeaceButton = new AncientButton("求和");
         endUpPeaceButton.setPreferredSize(BUTTON_SIZE);
+
+        restartButton.addActionListener(e -> {
+            // 1. 停止当前循环配乐
+            AudioPlayer.stopLoopingSound("src/main/resources/Audio/斗地主.wav");
+            // 2. 重新启动循环配乐（AudioPlayer 内部保证单例，无二重奏）
+            AudioPlayer.playLoopingSound("src/main/resources/Audio/斗地主.wav");
+        });
+
 
         // Add Buttons to Container
         buttonContainer.add(Startbutton);
