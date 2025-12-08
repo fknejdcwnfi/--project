@@ -82,6 +82,7 @@ public class LoginFrame extends JFrame{
 
             //这是登录框架的开始按键的相关响应代码部分
             loginPanel.getLoginButton().addActionListener(e -> {//button指开始的按键
+                AudioPlayer.playSound("src/main/resources/Audio/按键音效.wav");
                 if (enteruser(loginPanel.getUsername())>=0) {//指用户存在
                     String inputUsername = loginPanel.getUsername();//Capture the name here
 
@@ -96,6 +97,11 @@ public class LoginFrame extends JFrame{
                         setupGameFrameListeners();
                         //=================================================================
 
+                        if(gameFrame.getStartButton().isEnabled()) {
+                            gameFrame.getRestartButton().setEnabled(false);
+                        } else {
+                            AudioPlayer.playSound("src/main/resources/Audio/游戏进行中.wav");
+                        }
                         //display the GameFrame
                         AudioPlayer.stopLoopingSound("src/main/resources/Audio/我的歌声里.wav");
                         gameFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -122,6 +128,7 @@ public class LoginFrame extends JFrame{
 
         //从登录到注册的启动按键
         loginPanel.getSignInButton().addActionListener(e -> {
+            AudioPlayer.playSound("src/main/resources/Audio/按键音效.wav");
             signinFrame.setVisible(true);
             signinFrame.setLocationRelativeTo(null);
             this.setVisible(false);
@@ -129,12 +136,14 @@ public class LoginFrame extends JFrame{
 
         //从注册界面回到登录界面==============================================================
         signinFrame.getReturnButton().addActionListener(e -> {
+            AudioPlayer.playSound("src/main/resources/Audio/按键音效.wav");
             signinFrame.setVisible(false);
             this.setVisible(true);
         });
 
         //点击确认注册那个按键的操作判定（注册用户的相关判定）
         signinFrame.getConfirmPasswordButton().addActionListener(e->{
+            AudioPlayer.playSound("src/main/resources/Audio/按键音效.wav");
             if(rightname(signinFrame.getYourNameTextField()) && passworkcheck(signinFrame.getYourPasswordTextField())){//正确的密码格式和账号格式 //后面是写入对应文本的方法
                     try{
                         String roadN=".\\src\\main\\java\\edu\\sustech\\xiangqi\\Nickname";
@@ -203,9 +212,11 @@ public class LoginFrame extends JFrame{
 
         // 游客登录相关的相应
         this.loginPanel.getTouristButton().addActionListener(e -> {
+                    AudioPlayer.playSound("src/main/resources/Audio/按键音效.wav");
                     AudioPlayer.stopLoopingSound("src/main/resources/Audio/我的歌声里.wav");
                     this.gameFrame = new GameFrame(null);
                     this.setupGameFrameListeners();
+                    gameFrame.getRestartButton().setEnabled(false);
                     gameFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                     gameFrame.pack();
                     gameFrame.setLocationRelativeTo(null);
@@ -216,6 +227,7 @@ public class LoginFrame extends JFrame{
 
         //改变密码的相关代码
         changePasswordFrame.getChangePasswordButton().addActionListener(e->{
+            AudioPlayer.playSound("src/main/resources/Audio/按键音效.wav");
             // 1. 获取用户索引
             int userIndex = InterChecking.enteruser(changePasswordFrame.theUserNameText());
 
@@ -248,6 +260,7 @@ public class LoginFrame extends JFrame{
         // =====================================================================
         //重新开始的响应器
         gameFrame.getRestartButton().addActionListener(e -> {
+            AudioPlayer.playSound("src/main/resources/Audio/按键音效.wav");
             PlayGameSession newActiveSession = new PlayGameSession(gameFrame.getActiveSession().getPlayerNameID());//全新棋盘和红棋子先走
             gameFrame.setActiveSessionModel(newActiveSession);
             gameFrame.setCurrentCamp(newActiveSession.getCurrentCamp());
@@ -256,6 +269,7 @@ public class LoginFrame extends JFrame{
             gameFrame.refreshLastMoveVisuals();
             gameFrame.getStartbutton().setEnabled(true);
             gameFrame.getStartbutton().setText("点击开始");
+            gameFrame.getRestartButton().setEnabled(false);
             gameFrame.getBoardPanel().setGameInteractionEnabled(false);
             gameFrame.getEndUpPeaceButton().setEnabled(true);
             gameFrame.getTakeBackAMove().setEnabled(true);
@@ -266,6 +280,7 @@ public class LoginFrame extends JFrame{
         // 2. Game frame change information button
         //=====================================================
         gameFrame.getChangeinformation().addActionListener(e->{
+            AudioPlayer.playSound("src/main/resources/Audio/按键音效.wav");
             AudioPlayer.stopLoopingSound("src/main/resources/Audio/斗地主.wav");
             AudioPlayer.playLoopingSound("src/main/resources/Audio/我的歌声里.wav");
             gameFrame.stopGameTimer();
@@ -280,6 +295,7 @@ public class LoginFrame extends JFrame{
 
         // 3. Game frame return from password change (already defined)
         changePasswordFrame.getReturnToTheGame().addActionListener(e->{
+            AudioPlayer.playSound("src/main/resources/Audio/按键音效.wav");
             AudioPlayer.stopLoopingSound("src/main/resources/Audio/我的歌声里.wav");
             AudioPlayer.playLoopingSound("src/main/resources/Audio/斗地主.wav");
             changePasswordFrame.setVisible(false);
@@ -288,6 +304,7 @@ public class LoginFrame extends JFrame{
 
         // 4. Save and Exit button
         gameFrame.getSaveAndOutButton().addActionListener(e->{
+            AudioPlayer.playSound("src/main/resources/Audio/按键音效.wav");
             // using GamePersistence.saveGame(gameFrame.activeSession)
             gameFrame.setVisible(false);
             gameFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -295,6 +312,7 @@ public class LoginFrame extends JFrame{
 
         //5. 悔棋的响应器
         gameFrame.getTakeBackAMove().addActionListener(e->{
+            AudioPlayer.playSound("src/main/resources/Audio/按键音效.wav");
             ChessBoardModel model = gameFrame.getActiveSession().getChessBoardModel();
             CurrentCamp currentCamp = gameFrame.getActiveSession().getCurrentCamp();
             ChessBoardPanel boardPanel = gameFrame.getBoardPanel();
@@ -342,16 +360,22 @@ public class LoginFrame extends JFrame{
         //=============================================================
         gameFrame.getStartButton().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                AudioPlayer.playSound("src/main/resources/Audio/按键音效.wav");
                 // a. 启用棋盘交互
                 gameFrame.getBoardPanel().setGameInteractionEnabled(true);
                 // b. 禁用“点击开始”按钮，防止重复点击，同时提示用户已开始
                 gameFrame.getStartButton().setEnabled(false);
+                AudioPlayer.playSound("src/main/resources/Audio/游戏开始.wav");
+                if (!gameFrame.getRestartButton().isEnabled()) {
+                    gameFrame.getRestartButton().setEnabled(true);
+                }
                 gameFrame.getStartButton().setText("游戏中...");
             }
         });
 
         gameFrame.getSaveButton().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {//why this is what?
+                AudioPlayer.playSound("src/main/resources/Audio/按键音效.wav");
                 if (!gameFrame.getIsTourist()) {
                     gameFrame.stopGameTimer();
                     gameFrame.updateScoreLabel();
@@ -363,12 +387,14 @@ public class LoginFrame extends JFrame{
                 } else {
                     System.out.println("you are Tourist exit - No save");
                 }
+                AudioPlayer.stopAllLoopingSounds();
                 dispose();//close the game window
             }
         });
 
         gameFrame.getGiveUpButton().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                AudioPlayer.playSound("src/main/resources/Audio/按键音效.wav");
                 //the current active camp is the one whose general is in check
                 boolean isRedTurn = gameFrame.getActiveSession().getCurrentCamp().isRedTurn();
 
@@ -376,8 +402,10 @@ public class LoginFrame extends JFrame{
                 String loser = isRedTurn ? "红方" : "黑方";
                 if (isRedTurn) {
                     gameFrame.addBlackCampScore();
+                    AudioPlayer.playSound("src/main/resources/Audio/红方投降.wav");
                 }  else {
                     gameFrame.addRedCampScore();
+                    AudioPlayer.playSound("src/main/resources/Audio/黑方投降.wav");
                 }
                 gameFrame.updateScoreLabel();
                 gameFrame.updateStatusMessage(winner + "胜利！（" + loser + "认输）", Color.BLUE, true);
@@ -396,6 +424,7 @@ public class LoginFrame extends JFrame{
 
         gameFrame.getEndUpPeaceButton().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                AudioPlayer.playSound("src/main/resources/Audio/按键音效.wav");
                 if (!gameFrame.getActiveSession().getChessBoardModel().getMoveHistory().isEmpty()) {
                     gameFrame.updateStatusMessage("双方和棋！", Color.BLUE, true);
                     AudioPlayer.playSound("src/main/resources/Audio/双方和棋.WAV");
