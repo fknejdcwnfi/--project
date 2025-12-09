@@ -1,8 +1,8 @@
 package edu.sustech.xiangqi.model;
 
 public class CarPiece extends AbstractPiece {
-    public CarPiece(String name, int row, int col, boolean isRed) {
-    super(name, row, col, isRed);
+    public CarPiece(String name, int row, int col, boolean isRed, int value) {
+    super(name, row, col, isRed,  value);
 }
     @Override
     public boolean canMoveTo(int targetRow, int targetCol, ChessBoardModel model) {

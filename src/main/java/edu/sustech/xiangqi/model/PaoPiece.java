@@ -1,8 +1,8 @@
 package edu.sustech.xiangqi.model;
 
 public class PaoPiece extends AbstractPiece{
-    public PaoPiece(String name, int row, int col, boolean isRed) {
-        super(name, row, col, isRed);
+    public PaoPiece(String name, int row, int col, boolean isRed,  int value) {
+        super(name, row, col, isRed,  value);
     }
     @Override
     public boolean canMoveTo(int targetRow, int targetCol, ChessBoardModel model) {

@@ -1,4 +1,5 @@
 package edu.sustech.xiangqi.ui;
+import edu.sustech.xiangqi.AutoWarning;
 import edu.sustech.xiangqi.CurrentCamp;
 import edu.sustech.xiangqi.GameFrame;
 import edu.sustech.xiangqi.MoveEveryStep;
@@ -37,6 +38,10 @@ public class ChessBoardPanel extends JPanel {
 
     //调用那个检测下一步的红圈标记方法。
     private java.util.List<Point> legalMoves = new ArrayList<>();
+    private java.util.List<Point> autoMoves = new ArrayList<>();
+    private java.util.List<Point> autoEat = new ArrayList<>();
+    private Timer idleTimer;
+
     private GameFrame gameFrame;
 
     public ChessBoardPanel(ChessBoardModel model, CurrentCamp camp, GameFrame gameFrame) {
@@ -45,6 +50,9 @@ public class ChessBoardPanel extends JPanel {
         this.gameFrame = gameFrame;
         // 1. 设置布局为 null，这样我们可以用 setBounds 随意放置 Label
         this.setLayout(null);
+
+        idleTimer = new Timer(5000, e -> triggerAutoWarning());
+        idleTimer.setRepeats(false);
 
         setPreferredSize(new Dimension(
                 CELL_SIZE * (ChessBoardModel.getCols() - 1) + MARGIN * 2,
@@ -78,23 +86,21 @@ public class ChessBoardPanel extends JPanel {
 
     //=====================================================================
     public void setGameInteractionEnabled(boolean enabled) {
-
         String bgmPath="src/main/resources/Audio/" + "斗地主.wav";
-
         if (enabled) {
             // 启动循环音效（单例防止叠加）
             AudioPlayer.playLoopingSound(bgmPath);
         } else {
         }
-
         this.interactionEnabled = enabled; // 使用 this
-
         if (interactionEnabled) {
             // 游戏开始
             updateTurnLabel();   // 显示 "当前回合：红方"
             gameFrame.startGameTimer();
+            idleTimer.start();
         } else {
             gameFrame.stopGameTimer();
+            idleTimer.stop();
             // 禁用时
             if (this.model.getMoveHistory().isEmpty()) {
                 gameFrame.updateStatusMessage("请点击开始", Color.BLUE, true);
@@ -106,14 +112,13 @@ public class ChessBoardPanel extends JPanel {
     }
 
     //===========================================================================
-
     private void handleMouseClick(int x, int y) {
-
-        // *** 关键检查 ***//===========================================================
         if (!interactionEnabled) {
             return;
         }
-        //==============================================================================
+
+        idleTimer.stop();
+        idleTimer.restart();
 
         int col = Math.round((float) (x - MARGIN) / CELL_SIZE);
         int row = Math.round((float) (y - MARGIN) / CELL_SIZE);
@@ -771,6 +776,39 @@ public class ChessBoardPanel extends JPanel {
         g2d.setColor(BLUE_RING);
         g2d.setStroke(new BasicStroke(3.0f));
         g2d.drawOval(eX - HIGHLIGHT_RADIUS, eY - HIGHLIGHT_RADIUS, DIAMETER, DIAMETER);
+    }
+
+    private void triggerAutoWarning() {
+        if (!interactionEnabled) return; // Don't warn if game isn't running
+        if (selectedPiece != null) return; // Don't warn if user is already holding a piece
+
+        System.out.println("5 seconds inactivity detected - Triggering Auto Warning...");
+
+        // 1. Ask AutoWarning for the best PIECE
+        AbstractPiece bestPiece = AutoWarning.warningPiece(model, currentCamp);
+
+        if (bestPiece != null) {
+            // 2. Ask AutoWarning for the best MOVE for that piece
+            // We pass 'this.autoMoves' and 'this.autoEat' as buffers, just like your logic requires
+            java.util.List<Point> bestMoves = AutoWarning.chooseToMoveOrEat(model, bestPiece, currentCamp, this.autoMoves, this.autoEat);
+
+            if (!bestMoves.isEmpty()) {
+                // 3. Highlight the piece (Simulate selection)
+                this.selectedPiece = bestPiece;
+
+                // 4. Highlight ONLY the suggested move
+                // We overwrite legalMoves so only the "Best" move is shown with the blue circle/aim icon
+                this.legalMoves.clear();
+                this.legalMoves.addAll(bestMoves);
+
+                // 5. Play a sound or show status to alert user
+                gameFrame.updateStatusMessage("建议走法已显示", Color.MAGENTA, true);
+                AudioPlayer.playSound("src/main/resources/Audio/落子.wav"); // Optional prompt sound
+
+                // 6. Redraw the board to show the highlights
+                repaint();
+            }
+        }
     }
 }
 

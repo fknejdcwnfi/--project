@@ -1,18 +1,22 @@
 package edu.sustech.xiangqi.model;
 import java.io.Serializable;
 
-public abstract class AbstractPiece implements Serializable,Cloneable{
+public abstract class AbstractPiece implements Serializable,Cloneable,Comparable<AbstractPiece>{
     private final String name;
     private final boolean isRed;
     private int row;
     private int col;
+    private int value;
+    private int totalMoveCount;
     private static final long serialVersionUID = 1L;
 
-    public AbstractPiece(String name, int row, int col, boolean isRed) {
+    public AbstractPiece(String name, int row, int col, boolean isRed,  int value) {
         this.name = name;
         this.row = row;
         this.col = col;
         this.isRed = isRed;
+        this.value = value;
+        this.totalMoveCount = value;
     }
 
     public String getName() {
@@ -39,6 +43,10 @@ public abstract class AbstractPiece implements Serializable,Cloneable{
         return isRed;
     }
 
+    public int getValue() {
+        return value;
+    }
+
     public void moveTo(int newRow, int newCol) {
         this.row = newRow;
         this.col = newCol;
@@ -58,5 +66,25 @@ public abstract class AbstractPiece implements Serializable,Cloneable{
         } catch (CloneNotSupportedException e) {
             throw new AssertionError("克隆失败", e);
         }
+    }
+
+    @Override
+    public int compareTo(AbstractPiece o) {//the small to the large
+        if (this.value > o.value) {
+            return 1;
+        } else {
+            if (this.value < o.value) {
+                return -1;
+            }  else {
+                return 0;
+            }
+        }
+    }
+
+    public void setTotalMoveCount(int totalMoveCount) {
+        this.totalMoveCount = totalMoveCount;
+    }
+    public int getTotalMoveCount() {
+        return totalMoveCount;
     }
 }

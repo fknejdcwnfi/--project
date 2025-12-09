@@ -5,8 +5,8 @@ package edu.sustech.xiangqi.model;
  */
 public class GeneralPiece extends AbstractPiece implements Cloneable {
 
-    public GeneralPiece(String name, int row, int col, boolean isRed) {
-        super(name, row, col, isRed);
+    public GeneralPiece(String name, int row, int col, boolean isRed, int value) {
+        super(name, row, col, isRed,  value);
     }
 
     @Override

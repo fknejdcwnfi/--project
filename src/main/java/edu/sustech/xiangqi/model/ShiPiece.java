@@ -1,8 +1,8 @@
 package edu.sustech.xiangqi.model;
 
 public class ShiPiece extends AbstractPiece {
-    public ShiPiece(String name, int row, int col, boolean isRed) {
-        super(name, row, col, isRed);
+    public ShiPiece(String name, int row, int col, boolean isRed, int value) {
+        super(name, row, col, isRed, value);
     }
 
     @Override
