@@ -386,10 +386,12 @@ public class ChessBoardPanel extends JPanel {
         }
         if (eatintCount == 1 && mustDie == 1 && isInCheckCount == 1 && justMoveCount == 0) {
             AudioPlayer.playSound("src/main/resources/Audio/绝杀.wav");
+            gameFrame.addCoinsOnWin();
             this.setGameInteractionEnabled(false);
         }
         if (eatintCount == 0 && mustDie == 1 && isInCheckCount == 1 && justMoveCount == 1) {
             AudioPlayer.playSound("src/main/resources/Audio/绝杀.wav");
+            gameFrame.addCoinsOnWin();
             this.setGameInteractionEnabled(false);
         }
         if (eatintCount == 0 && mustDie == 0 && isInCheckCount == 0 && justMoveCount == 1) {
@@ -911,6 +913,9 @@ public class ChessBoardPanel extends JPanel {
                 repaint();
             }
         }
+    }
+    public Timer getIdleTimer() {
+        return idleTimer;
     }
 }
 

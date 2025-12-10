@@ -13,11 +13,13 @@ public class PlayGameSession implements Serializable{//这是玩家状态属性�
     private int secondsElapsed;
     private int redCampScore;
     private int blackCampScore;
+    private int coins = 5;
 
     public PlayGameSession(String playerName) {
            this.PlayerNameID = playerName;
            this.chessBoardModel = new ChessBoardModel();
            this.currentCamp = new CurrentCamp();
+
     }
 
     public ChessBoardModel getChessBoardModel() {
@@ -66,5 +68,11 @@ public class PlayGameSession implements Serializable{//这是玩家状态属性�
     }
     public int getBlackCampScore() {
         return blackCampScore;
+    }
+    public int getCoins() {
+        return coins;
+    }
+    public void setCoins(int coins) {
+        this.coins = coins;
     }
 }

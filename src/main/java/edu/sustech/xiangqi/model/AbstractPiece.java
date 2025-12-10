@@ -79,7 +79,6 @@ public abstract class AbstractPiece implements Serializable,Cloneable,Comparable
             }
         }
     }
-
     public void setTotalMoveCount(int totalMoveCount) {
         this.totalMoveCount = totalMoveCount +  value;
     }

@@ -32,12 +32,14 @@ public class GameFrame extends JFrame {
     private JLabel timerLabel;
     private JLabel campGoalLabel;
     private JLabel statusLabel;
+    private JLabel coinsLabel;
 
     // Data
     private boolean isTourist;
     private String playerName;
     private int redCampScore;
     private int blackCampScore;
+    private int coins;
 
     // CONSTANTS
     private static final int SIDE_PANEL_WIDTH = 350; // Width for Left and Right panels to ensure symmetry
@@ -101,6 +103,12 @@ public class GameFrame extends JFrame {
         this.setLocationRelativeTo(null);
         this.setLayout(new BorderLayout()); // Main Layout
 
+        // 初始化金币：仅登录用户有金币，游客不初始化
+        if (!isTourist) {
+            this.coins = activeSession != null ? activeSession.getCoins() : 5; // 登录用户默认5金币
+        }
+        // 游客无需初始化金币（coins变量无效）
+
         // ==================== 1. Session & Logic Init ====================
         initializeSession();
         initializeScores();
@@ -125,6 +133,7 @@ public class GameFrame extends JFrame {
         boolean isGameRunning = !Startbutton.isEnabled();
         this.boardPanel.setGameInteractionEnabled(isGameRunning);
 
+        updateScoreLabel();//??
         // ==================== 5. Finalize Window ====================
         this.pack(); // Adjusts window size based on components
         this.setVisible(false);
@@ -159,6 +168,7 @@ public class GameFrame extends JFrame {
         } else {
             this.redCampScore = activeSession.getRedCampScore();
             this.blackCampScore = activeSession.getBlackCampScore();
+            this.coins =  activeSession.getCoins();
         }
 
         String playingTime = activeSession.getPlayingTime();
@@ -205,6 +215,13 @@ public class GameFrame extends JFrame {
             contentContainer.add(Box.createVerticalStrut(5));
             contentContainer.add(nameLabel);
             contentContainer.add(Box.createVerticalStrut(30));
+
+            coinsLabel = new JLabel("当前金币: " + coins + " 元");
+            coinsLabel.setFont(new Font("华文行楷", Font.BOLD, 20));
+            coinsLabel.setForeground(new Color(105, 132, 205)); // 金色
+            coinsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            contentContainer.add(Box.createVerticalStrut(20));
+            contentContainer.add(coinsLabel);
         }
 
         // 2. Timer
@@ -369,6 +386,7 @@ public class GameFrame extends JFrame {
 
     public int getSecondsElapsed() { return secondsElapsed; }
     public String getTimerLabel() { return this.timerLabel.getText(); }
+    public int getCoins(){return coins;}
 
     public int getRedCampScore() { return redCampScore; }
     public void addRedCampScore() { this.redCampScore++; }
@@ -379,13 +397,45 @@ public class GameFrame extends JFrame {
     public void removeBlackCampScore() { this.blackCampScore--; }
 
     public void updateScoreLabel() {
-        // Updated HTML format for the Score label in the Left Panel
+        String rankHtml="";
+        int totalScore = this.redCampScore + this.blackCampScore;
+        // 极简段位判断：超过5（≥6）就是白银
+        String rank;
+        if (totalScore == 0) {
+            rank = "新手";
+        } else if (totalScore >= 1 && totalScore <= 5) {
+            rank = "青铜";
+        } else if (totalScore >= 6 && totalScore <= 15) {
+            rank = "白银";
+        } else if (totalScore >= 16 && totalScore <= 30) {
+            rank = "黄金";
+        } else if (totalScore >= 31 && totalScore <= 50) {
+            rank = "钻石";
+        } else {
+            rank = "王者";
+        }
+        // 段位颜色
+        Color rankColor;
+        switch (rank) {
+            case "新手": rankColor = Color.GRAY; break;
+            case "青铜": rankColor = Color.GRAY; break;
+            case "白银": rankColor = Color.GRAY; break;
+            case "黄金": rankColor = Color.GRAY; break;
+            case "钻石": rankColor = Color.GRAY; break;
+            case "王者": rankColor = Color.GRAY; break;
+            default: rankColor = Color.BLACK; break;
+        }
+
+        String colorHex = String.format("#%02x%02x%02x", rankColor.getRed(), rankColor.getGreen(), rankColor.getBlue());
+        rankHtml = String.format("<br/><br/><span style='font-size:16px; color:%s;'>当前段位: %s</span>", colorHex, rank);
+
         String goalText = String.format("<html>" +
                 "<div style='text-align:center; font-size:14px;'>" +
                 "<span style='color:red;'>红方: %d</span><br/><br/>" +
                 "<span style='color:black;'>---- VS ----</span><br/><br/>" +
                 "<span style='color:black;'>黑方: %d</span>" +
-                "</div></html>", this.redCampScore, this.blackCampScore);
+                "%s"+
+                "</div></html>", this.redCampScore, this.blackCampScore,rankHtml);
 
         this.campGoalLabel.setText(goalText);
         this.campGoalLabel.repaint();
@@ -429,4 +479,41 @@ public class GameFrame extends JFrame {
             boardPanel.setLastMove(null);
         }
     }
+
+    private void updateCoinsLabel() {
+        if (!isTourist) { // 仅登录用户显示金币
+            coinsLabel.setText("当前金币: " + coins + " 元");
+        }
+    }
+
+    public void addCoinsOnWin() {
+        if (!isTourist) { // 游客不执行
+            coins += 3;
+            updateCoinsLabel();
+        }
+    }
+
+    public void addCoinsOnEquals(){
+        if (!isTourist){
+            coins += 1;
+            updateCoinsLabel();
+        }
+    }
+
+    public boolean reduceCoins() {
+        if (isTourist) {
+            return true; // 游客无条件允许悔棋
+        } else {
+            // 登录用户：金币≥1才允许悔棋
+            if (coins >= 1) {
+                coins -= 1;
+                updateCoinsLabel();
+                return true;
+            } else {
+                JOptionPane.showMessageDialog(this, "金币不足1元，无法悔棋！","提示", JOptionPane.WARNING_MESSAGE);
+                return false;
+            }
+        }
+    }
+
 }
