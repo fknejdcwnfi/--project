@@ -292,10 +292,17 @@ public class ChessBoardPanel extends JPanel {
                 selectedPiece = null;
 
                 gameFrame.refreshLastMoveVisuals();
+                checkAndHandleGameOver(currentCamp, model); // 检查黑方是否将死/困毙
+
+                if (!this.interactionEnabled) {
+                    updateTurnLabel();
+                    return;
+                }
 
                 if (!messageShown) {//Only update turn label if we didn't just show a warning
                     updateTurnLabel();
                 }
+
                 if (useAI && currentCamp.isRedTurn()) {
                     if (AIAutoWarning.shouldBlackAISurrender(model, currentCamp)) {
                         // 黑方投降
@@ -876,10 +883,43 @@ public class ChessBoardPanel extends JPanel {
                     // 提示 AI 已移动
                     gameFrame.updateStatusMessage(" (黑方) 自动落子", Color.MAGENTA, true);
 
+                } else {
+                    System.out.println("AI 找不到合法走法，触发游戏结束检查。");
+                    String message = "黑方投降！";
+                    gameFrame.updateStatusMessage(message, Color.BLUE, true);
+                    this.setGameInteractionEnabled(false); // 禁用交互
+                    gameFrame.addRedCampScore();
+                    gameFrame.updateScoreLabel();
+                    repaint();
+                    gameFrame.hideGiveUpOption();
+                    gameFrame.getEndUpPeaceButton().setEnabled(false);
+                    gameFrame.stopGameTimer();
+                    gameFrame.getActiveSession().setPlayingTime(gameFrame.getTimerLabel());
+                    gameFrame.getActiveSession().setSecondsElapsed(gameFrame.getSecondsElapsed());
+                    gameFrame.getActiveSession().setRedCampScore(gameFrame.getRedCampScore());
+                    gameFrame.getActiveSession().setBlackCampScore(gameFrame.getBlackCampScore());
+                    GamePersistence.saveGame(gameFrame.getActiveSession());
                 }
+            } else {
+                System.out.println("AI 找不到最佳棋子，触发游戏结束检查。");
+                String message = "黑方投降！";
+                gameFrame.updateStatusMessage(message, Color.BLUE, true);
+                this.setGameInteractionEnabled(false); // 禁用交互
+                gameFrame.addRedCampScore();
+                gameFrame.updateScoreLabel();
+                repaint();
+                gameFrame.hideGiveUpOption();
+                gameFrame.getEndUpPeaceButton().setEnabled(false);
+                gameFrame.stopGameTimer();
+                gameFrame.getActiveSession().setPlayingTime(gameFrame.getTimerLabel());
+                gameFrame.getActiveSession().setSecondsElapsed(gameFrame.getSecondsElapsed());
+                gameFrame.getActiveSession().setRedCampScore(gameFrame.getRedCampScore());
+                gameFrame.getActiveSession().setBlackCampScore(gameFrame.getBlackCampScore());
+                GamePersistence.saveGame(gameFrame.getActiveSession());
             }
         }
     }
+
 
     public boolean getUseAI () {
         return useAI;
@@ -932,6 +972,66 @@ public class ChessBoardPanel extends JPanel {
     }
     public Timer getIdleTimer() {
         return idleTimer;
+    }
+    private void checkAndHandleGameOver(CurrentCamp camp, ChessBoardModel model) {
+        // 检查是否有任何合法走法
+        boolean hasLegalMoves = model.hasLegalMoves(camp.isRedTurn());
+
+        if (!hasLegalMoves) {
+            if (model.isInCheck(camp.isRedTurn())) {
+                String winner = camp.isRedTurn() ? "黑方" : "红方";
+                String loser = camp.isRedTurn() ? "红方" : "黑方";
+                String message = loser + " 被将死！" + winner + "胜利！";
+
+                gameFrame.updateStatusMessage(message, Color.BLUE, true);
+                this.setGameInteractionEnabled(false); // 禁用交互
+                if (currentCamp.isRedTurn()) {
+                    gameFrame.addBlackCampScore();;
+                    gameFrame.updateScoreLabel();
+                    repaint();
+                } else  {
+                    gameFrame.addRedCampScore();
+                    gameFrame.updateScoreLabel();
+                    repaint();
+                }
+                System.out.println(loser + "被将死，游戏结束。");
+                this.setGameInteractionEnabled(false);
+                gameFrame.hideGiveUpOption();
+                gameFrame.getEndUpPeaceButton().setEnabled(false);
+                gameFrame.stopGameTimer();
+                gameFrame.getActiveSession().setPlayingTime(gameFrame.getTimerLabel());
+                gameFrame.getActiveSession().setSecondsElapsed(gameFrame.getSecondsElapsed());
+                gameFrame.getActiveSession().setRedCampScore(gameFrame.getRedCampScore());
+                gameFrame.getActiveSession().setBlackCampScore(gameFrame.getBlackCampScore());
+                GamePersistence.saveGame(gameFrame.getActiveSession());
+                return;
+            }
+            else {
+                String message = "困毙！！";
+                gameFrame.updateStatusMessage(message, Color.BLUE, true);
+                this.setGameInteractionEnabled(false); // 禁用交互
+                if (currentCamp.isRedTurn()) {
+                    gameFrame.addBlackCampScore();;
+                    gameFrame.updateScoreLabel();
+                    repaint();
+                } else  {
+                    gameFrame.addRedCampScore();
+                    gameFrame.updateScoreLabel();
+                    repaint();
+                }
+                System.out.println("困毙，游戏结束。");
+                this.setGameInteractionEnabled(false);
+                gameFrame.hideGiveUpOption();
+                gameFrame.getEndUpPeaceButton().setEnabled(false);
+                gameFrame.stopGameTimer();
+                gameFrame.getActiveSession().setPlayingTime(gameFrame.getTimerLabel());
+                gameFrame.getActiveSession().setSecondsElapsed(gameFrame.getSecondsElapsed());
+                gameFrame.getActiveSession().setRedCampScore(gameFrame.getRedCampScore());
+                gameFrame.getActiveSession().setBlackCampScore(gameFrame.getBlackCampScore());
+                GamePersistence.saveGame(gameFrame.getActiveSession());
+                return;
+            }
+        }
     }
 }
 
